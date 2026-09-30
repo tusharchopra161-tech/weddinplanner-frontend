@@ -20,7 +20,7 @@ export const Signup = () => {
 
    const handleSubmit= async(e)=>{
    e.preventDefault();
-   console.log(API_URL)
+  //  console.log(API_URL)
     const res=await fetch(`https://weddingplannerbackend-vaq7.onrender.com/user`,{
       method:"post",
       headers:{
