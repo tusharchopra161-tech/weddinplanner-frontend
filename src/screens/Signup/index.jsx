@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+// const API_URL = import.meta.env.BACKEND_URL;
 export const Signup = () => {
   const navigate=useNavigate()
   const [form,setForm]=useState({
@@ -20,8 +20,8 @@ export const Signup = () => {
 
    const handleSubmit= async(e)=>{
    e.preventDefault();
-   
-    const res=await fetch(`${API_URL}/user`,{
+   console.log(API_URL)
+    const res=await fetch(`https://weddingplannerbackend-vaq7.onrender.com//user`,{
       method:"post",
       headers:{
         "Content-Type":"application/json"
