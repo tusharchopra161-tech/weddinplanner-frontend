@@ -1,0 +1,113 @@
+
+.nav-top{
+    padding-top:8px;
+    display:flex;
+    background-color: #692065;
+    width:100%;
+    height: 2.5rem;
+    color:white;
+    justify-content: center;
+    font-size: 1rem;
+    position: fixed;
+    z-index:999;
+}
+
+.nav-bottom{
+
+    height:4.5rem;
+    top:2.5rem;
+    width: 100%;
+    background-color: #FFFDF8;
+    border-bottom: 2px solid #DFC9DC;
+     background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    position: fixed;
+    z-index: 1000; 
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    display:flex;
+    justify-content: space-between;
+    padding:0.5rem;
+    /* animation:navDown 1s ease-out forwards; */
+}
+@keyframes navDown{
+    from{
+        transform :translateY(-100%);
+    }
+    to{
+        transform:translateY(0);
+    }
+}
+.nav-logo{
+display:flex;
+align-items: center;
+margin-left:1.7rem;
+gap:0.3rem;
+}
+.nav-logo-text{
+    color: #661F62;
+    font-size: 1.8rem;
+    font-weight: 600;
+    
+}
+.nav-logo-img img{
+    height: 3rem;
+    width: 3rem;
+    border-radius: 4px;
+}
+.nav-middle{
+    display:flex;
+    gap:1.3rem
+}
+.nav-btn{
+    color:#654E63;
+    background-color:transparent;
+    border:none;
+    font-size: large;
+}
+.nav-right{
+ display:flex;
+ align-items: center;
+ justify-content: space-between;
+ gap:0.3rem;
+ width:30%
+}
+#listbtn{
+   background-color: #FCF6E9;
+   color:#692065;
+   border-radius: 1.5rem; 
+   border:1.5px solid #DFC9DC;
+   height:2.5rem;
+   padding:10px;
+   font-size: 1rem;
+   font-weight: 500;
+   width:100%;
+}
+#sbtn{
+    color:#692065;
+       width:100%;
+    border:none;
+    background-color: transparent;
+    font-size: 1rem;
+    font-size: larger;
+
+}
+#getbtn{
+background-color: #C28D2E;
+color:#431C30;
+width:100%;
+   border-radius: 1.5rem; 
+   height:2.5rem;
+   border:none;
+   /* padding:10px; */
+   font-weight: 500;
+   font-size:large;
+}
+#getbtn:hover{
+    background-color: #692065;
+    color:white;
+}
+.heart{
+    color:#C28D2E;
+    margin:2px;
+}

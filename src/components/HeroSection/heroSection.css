@@ -1,0 +1,45 @@
+.heromain{
+    background-color: #FCF6E9;
+    height: 80vh;
+    display:flex;
+    
+}
+.heroLeft{
+    width:50%;
+    
+}
+.heroRight{
+    width:50%;
+}
+.heroRight img {
+    height:30rem;
+    border-radius:3rem;
+    width:85%;
+    object-fit:cover;
+    z-index:99;
+}
+.loveBYCouple{
+    background-color: #fff;
+    height: 13%;
+    width:30%;
+    border-radius:1.2rem;
+    position:relative;
+    left:1.8rem;
+    top:-5rem;
+    padding:10px;
+    display:flex;
+    gap:7px;
+    z-index:99;
+}
+.circle{
+    background-color: #FFD4D2;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    display:flex;
+}
+.circle .dil{
+    color:#692065;
+}
