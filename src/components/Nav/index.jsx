@@ -4,8 +4,9 @@ import { FaHeart } from "react-icons/fa";
 // import {useGsap} from "@gsap/react"
 import {useGSAP} from "@gsap/react"
 import gsap from 'gsap';
+import { useNavigate } from 'react-router-dom';
 export const Nav = () => {
-  
+  const navigate=useNavigate()
   useGSAP(()=>{
     const tl=gsap.timeline()
     tl.from(".nav-logo",{
@@ -38,7 +39,7 @@ export const Nav = () => {
             </div>
             <div className="nav-right">
               <button id="listbtn">List Your Venue</button>
-              <button id="sbtn">Sign In</button>
+              <button id="sbtn" onClick={()=>{navigate("/login")}} >Sign In</button>
               <button id="getbtn">Get Started</button>
             </div>
         </div>
