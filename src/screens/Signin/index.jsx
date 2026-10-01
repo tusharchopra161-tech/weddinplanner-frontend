@@ -14,8 +14,8 @@ export const Signin = () => {
     };
     const handleSubmit=async(e)=>{
       e.preventDefault()
-      const userexist=await fetch("https://weddingplannerbackend-vaq7.onrender.com/user",{
-        method:"get",
+      const userexist=await fetch("https://weddingplannerbackend-vaq7.onrender.com/user/login",{
+        method:"post",
         headers:{
           "Content-Type":"application/json",
         },
