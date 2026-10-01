@@ -14,7 +14,13 @@ export const Signin = () => {
     };
     const handleSubmit=async(e)=>{
       e.preventDefault()
-      console.log(form)
+      const userexist=await fetch("https://weddingplannerbackend-vaq7.onrender.com/user",{
+        method:"get",
+        headers:{
+          "Content-Type":"application/json",
+        },
+        body:JSON.stringify(form)
+      }) ;
     }
   const navigate= useNavigate()
   return (
