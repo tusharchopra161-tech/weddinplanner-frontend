@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 export const Signin = () => {
+  const navigate= useNavigate()
   const [form,setForm]=useState({
       name:"",
       password:""
@@ -21,8 +22,10 @@ export const Signin = () => {
         },
         body:JSON.stringify(form)
       }) ;
+      console.log(userexist)
+      
     }
-  const navigate= useNavigate()
+  
   return (
     <div className="flex justify-center items-center flex flex-col w-full bg-red-200 min-h-screen ">
       <form onSubmit={handleSubmit} className=" rounded-[30px] bg-white/70 h-[70vh]  flex flex-col justify-between p-8 md:p-10 backdrop-blur-xl p-8 md:p-10 rounded-[30px] shadow-[0_20px_60px_rgba(105,32,101,0.12)] border border-red-200">
