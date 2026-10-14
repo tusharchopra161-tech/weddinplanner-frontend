@@ -12,7 +12,7 @@ export const Footer = () => {
       <div className="f-bottom">
         <div className="b-t">
           <div className="b-left">
-            <img src=""/>
+            <img />
             <h3>WeddingPlanner</h3>
             <p>Beautiful places for beautiful beginnnings.</p>
             </div>

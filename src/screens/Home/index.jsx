@@ -4,6 +4,7 @@ import { StartPLannigSearch } from '../../components/StartPlannigSearch'
 import { HeroSection } from '../../components/HeroSection'
 import { HomeMiddle } from '../../components/HomeMiddle'
 export const Home = () => {
+  
   return (
     <div className="homepage">
     <HeroSection/>

@@ -2,6 +2,7 @@ import React from 'react'
 import { FaHeart, FaStar } from "react-icons/fa";
 import { FaRegHeart } from "react-icons/fa";
 import gsap from "gsap"
+import {useGSAP} from "@gsap/react"
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useEffect } from 'react';
 export const Cards = (prop) => {
@@ -28,37 +29,38 @@ export const Cards = (prop) => {
 // )
 //   },[])
 
-useEffect(() => {
-    const cards = gsap.utils.toArray(".card");
+// useEffect(() => {
+//     const cards = gsap.utils.toArray(".card");
 
-    cards.forEach((card) => {
-      gsap.fromTo(
-        card,
-        {
-          y: 300,
-        //   stagger:2,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 3,
-          scrollTrigger: {
+//     cards.forEach((card) => {
+//       gsap.fromTo(
+//         card,
+//         {
+//           y: 300,
+//         //   stagger:2,
+//           opacity: 0,
+//         },
+//         {
+//           y: 0,
+//           opacity: 1,
+//           duration: 3,
+//           scrollTrigger: {
               
-            trigger: card,
-            start: "top 90%",
-            end: "top 50%",
-            // scrub: true,
-            markers: true,
-          },
-        }
-      );
-    });
+//             trigger: card,
+//             start: "top 90%",
+//             end: "top 50%",
+//             // scrub: true,
+//             markers: true,
+//           },
+//         }
+//       );
+//     });
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    };
-  }, []);
+//     return () => {
+//       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+//     };
+//   }, []);
+  
   return (
     
       <div className="card relative ms-1 overflow-hidden  bg-white w-[32.5%]  flex flex-col gap-5 rounded-3xl">

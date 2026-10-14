@@ -3,13 +3,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // const API_URL = import.meta.env.BACKEND_URL;
 export const Signup = () => {
+   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate=useNavigate()
   const [form,setForm]=useState({
-    
     name:"",
     mobileno:"",
     email:"",
-    password:""
+    password:"",
+    role:"user"
   })
   const handleChange= (e)=>{
     setForm({
@@ -19,8 +21,11 @@ export const Signup = () => {
   };
 
    const handleSubmit= async(e)=>{
+    console.log(form)
    e.preventDefault();
-  //  console.log(API_URL)
+   setMessage("");
+   try{
+    setLoading(true);
     const res=await fetch(`https://weddingplannerbackend-vaq7.onrender.com/user`,{
       method:"post",
       headers:{
@@ -28,21 +33,22 @@ export const Signup = () => {
       },
       body:JSON.stringify(form)
     });
-    console.log(res)
-    
+    const resjson=await res.json()
+    console.log(resjson)
+    if(resjson){
+      navigate("/login")
+    }else{
+      setMessage(resjson.message || "Signup failed");
+      navigate("/signup")
+    }
+   }catch(err){
+    setMessage("Unable to connect to the server. Please try again.");
+   }finally{
+     setLoading(false);
+   }
   }
   return (
-    // <div className="w-full  min-h-[100vh] m-[20px] p-[20px]">
-    //   <form onSubmit={handleSubmit} className="flex items-center justify-center flex-col gap-3">
-    //     <input className="w-[40vw] h-12 rounded-2xl font-semibold text-2xl bg-amber-100 p-1" type="Number" name="mobileno" value={form.mobileNo} onChange={handleChange} placeholder="enter MobileNo"></input>
-    //     <input className="w-[40vw] h-12 rounded-2xl font-semibold text-2xl bg-amber-100 p-1 " type="text" name="name" value={form.name} onChange={handleChange} placeholder="enter Name"></input>
-    //     <input className="w-[40vw] h-12 rounded-2xl font-semibold text-2xl bg-amber-100 p-1" type="text" name="email" value={form.email} onChange={handleChange} placeholder="enter email"></input>
-    //     <input className="w-[40vw] h-12 rounded-2xl font-semibold text-2xl bg-amber-100 p-1" type="text" name="password" value={form.password} onChange={handleChange} placeholder="enter password"></input>
-    //     <button className="bg-[#FFD4D2]">
-    //       Sign Up
-    //     </button>
-    //   </form>
-    //   </div>
+    
     <div className="w-full min-h-screen flex items-center justify-center bg-red-200 bg-[#faf7f8] px-5 py-10">
 
   <form
@@ -95,12 +101,31 @@ export const Signup = () => {
       onChange={handleChange}
       placeholder="Password"
     />
+    <div className="w-[80%]">
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Create account as
+          </label>
 
+          <select
+            name="role"
+            value={form.role}
+            onChange={handleChange}
+            className="w-full h-14 rounded-2xl border border-gray-200 bg-white px-5 outline-none focus:border-[#692065]"
+          >
+            <option value="user">User — Plan my wedding</option>
+            <option value="owner">Palace Owner — List my palace</option>
+          </select>
+        </div>
+        {message && (
+          <p className="w-[80%] text-sm text-red-600 text-center">
+            {message}
+          </p>
+        )}
     <button
       type="submit"
       className="w-[80%] h-14 mt-2 rounded-2xl bg-[#692065] text-white text-lg font-semibold shadow-lg shadow-[#692065]/20 transition duration-300 hover:bg-[#541950] hover:scale-[1.01] active:scale-[0.98]"
     >
-      Create Account
+     {loading ? "Creating Account..." : "Create Account"}
     </button>
 
     <p className="text-center text-sm text-gray-500 mt-1">
