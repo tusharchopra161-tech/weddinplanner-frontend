@@ -4,7 +4,7 @@ import { useState } from 'react'
 export const Signin = () => {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    name: "",
+    email: "",
     password: ""
   })
   const [message, setMessage] = useState("");
@@ -67,7 +67,7 @@ export const Signin = () => {
               Start planning your perfect wedding with us
             </p>
           </div>
-          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400' type="text" name="name" id="name" placeholder="Enter Your Name" onChange={handleChange} />
+          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400' type="text" name="email" id="name" placeholder="Enter Your Email" onChange={handleChange} />
           <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400' type="password" name="password" id="password" placeholder='Enter Password' onChange={handleChange} />
           {message && (
             <p className="text-red-600 text-sm text-center">
