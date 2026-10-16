@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./admindashboard.css";
 
-const API_URL = "https://weddingplannerbackend-vaq7.onrender.com";
+const API_URL = "https://weddingplanner-backend.onrender.com";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
