@@ -15,13 +15,14 @@ export const Signin = () => {
       ...form,
       [e.target.name]: e.target.value,
     });
+    console.log(form)
   };
   const handleSubmit = async (e) => {
     e.preventDefault()
     setMessage("");
     try {
       setLoading(true);
-      const response = await fetch("https://weddingplannerbackend-vaq7.onrender.com/user/login", {
+      const response = await fetch("https://weddingplanner-backend.onrender.com/user/login", {
         method: "post",
         headers: {
           "Content-Type": "application/json",
@@ -67,8 +68,22 @@ export const Signin = () => {
               Start planning your perfect wedding with us
             </p>
           </div>
-          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400' type="text" name="email" id="name" placeholder="Enter Your Email" onChange={handleChange} />
-          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400' type="password" name="password" id="password" placeholder='Enter Password' onChange={handleChange} />
+          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400'
+           type="text"
+            name="email"
+             id="name"
+            placeholder="Enter Your Email"
+            onChange={handleChange}
+            value={form.email}
+            required />
+          <input className='w-[63vh] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400'
+           type="password" 
+           name="password" 
+           id="password" 
+           placeholder='Enter Password' 
+           value={form.password}
+           onChange={handleChange} 
+           required />
           {message && (
             <p className="text-red-600 text-sm text-center">
               {message}

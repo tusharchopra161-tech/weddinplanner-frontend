@@ -26,7 +26,7 @@ export const Signup = () => {
    setMessage("");
    try{
     setLoading(true);
-    const res=await fetch(`https://weddingplannerbackend-vaq7.onrender.com/user`,{
+    const res=await fetch(`https://weddingplanner-backend.onrender.com/user`,{
       method:"post",
       headers:{
         "Content-Type":"application/json"
