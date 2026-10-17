@@ -56,10 +56,10 @@ const AdminDashboard = () => {
   // Listen for newly submitted palaces in real time.
   useEffect(() => {
     if (currentUser.role !== "admin") return;
-
+const token=localStorage.getItem("token")
     const socket = io(API_URL,{
       auth:{
-        token:localStorage.getItem(token)
+        token:token
       }
     });
 
