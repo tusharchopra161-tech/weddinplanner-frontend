@@ -57,7 +57,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (currentUser.role !== "admin") return;
 
-    const socket = io(API_URL);
+    const socket = io(API_URL,{
+      auth:{
+        token:localStorage.getItem(token)
+      }
+    });
 
     socket.on("connect", () => {
       console.log("Admin dashboard connected to live updates:", socket.id);
