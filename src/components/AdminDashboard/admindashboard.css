@@ -939,3 +939,155 @@
     font-size: 19px;
   }
 }
+
+/* Real-time admin notifications */
+.admin-notification-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-notification-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #eadce8;
+  border-radius: 50%;
+  background: #fffdf8;
+  color: #692065;
+  font-size: 19px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-notification-btn:hover {
+  background: #fcf6e9;
+  transform: translateY(-1px);
+}
+
+.admin-notification-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fffdf8;
+  border-radius: 999px;
+  background: #c62828;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.admin-notification-panel {
+  position: absolute;
+  z-index: 1100;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(350px, calc(100vw - 32px));
+  max-height: 390px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid #eadce8;
+  border-radius: 16px;
+  background: #fffdf8;
+  box-shadow: 0 16px 45px rgba(40, 20, 40, 0.16);
+}
+
+.admin-notification-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 10px;
+  border-bottom: 1px solid #f0e6ef;
+  color: #352235;
+}
+
+.admin-notification-heading button {
+  border: 0;
+  background: transparent;
+  color: #692065;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-notification-empty {
+  margin: 0;
+  padding: 22px 8px;
+  color: #7b6b79;
+  text-align: center;
+  font-size: 13px;
+}
+
+.admin-notification-item {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+  padding: 12px 6px;
+  border: 0;
+  border-bottom: 1px solid #f3ebf2;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-notification-item:last-child {
+  border-bottom: 0;
+}
+
+.admin-notification-item:hover {
+  background: #fcf6e9;
+}
+
+.admin-notification-dot {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #692065;
+}
+
+.admin-notification-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-notification-copy strong {
+  color: #352235;
+  font-size: 13px;
+}
+
+.admin-notification-copy span {
+  color: #746674;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-notification-copy small {
+  color: #9b8c99;
+  font-size: 11px;
+}
+
+@media (max-width: 600px) {
+  .admin-notification-panel {
+    right: -52px;
+  }
+
+  .admin-date {
+    display: none;
+  }
+}

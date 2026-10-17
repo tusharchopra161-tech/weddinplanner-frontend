@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import "./admindashboard.css";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
@@ -13,6 +14,8 @@ const AdminDashboard = () => {
   const [message, setMessage] = useState("");
   const [actionId, setActionId] = useState("");
   const [activePage, setActivePage] = useState("Overview");
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const currentUser = JSON.parse(
     localStorage.getItem("currentUser") || "{}"
@@ -49,6 +52,68 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchPendingPalaces();
   }, [fetchPendingPalaces]);
+
+  // Listen for newly submitted palaces in real time.
+  useEffect(() => {
+    if (currentUser.role !== "admin") return;
+
+    const socket = io(API_URL);
+
+    socket.on("connect", () => {
+      console.log("Admin dashboard connected to live updates:", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection failed:", err.message);
+    });
+
+    socket.on("new-palace", (payload) => {
+      const newPalace = payload?.palace;
+      if (!newPalace?._id || newPalace.status !== "pending") return;
+
+      setPalaces((previousPalaces) => {
+        const alreadyExists = previousPalaces.some(
+          (palace) => palace._id === newPalace._id
+        );
+
+        return alreadyExists
+          ? previousPalaces
+          : [newPalace, ...previousPalaces];
+      });
+
+      setNotifications((previousNotifications) => {
+        const alreadyNotified = previousNotifications.some(
+          (notification) => notification.id === newPalace._id
+        );
+
+        if (alreadyNotified) return previousNotifications;
+
+        return [
+          {
+            id: newPalace._id,
+            title: "New palace request",
+            message: `${newPalace.name || "A palace"} needs your approval.`,
+            createdAt: new Date().toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            read: false,
+          },
+          ...previousNotifications,
+        ];
+      });
+
+      setMessage(payload?.message || "A new palace request has arrived.");
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.off("new-palace");
+      socket.disconnect();
+    };
+    // currentUser is read from localStorage when this component mounts.
+  }, []);
 
   const handlePalaceStatus = async (palaceId, status) => {
     setActionId(palaceId);
@@ -176,6 +241,71 @@ const AdminDashboard = () => {
                 year: "numeric",
               })}
             </span>
+
+            <div className="admin-notification-wrap">
+              <button
+                type="button"
+                className="admin-notification-btn"
+                aria-label="Notifications"
+                aria-expanded={isNotificationOpen}
+                onClick={() => {
+                  setIsNotificationOpen((isOpen) => !isOpen);
+                  setNotifications((previousNotifications) =>
+                    previousNotifications.map((notification) => ({
+                      ...notification,
+                      read: true,
+                    }))
+                  );
+                }}
+              >
+                <span aria-hidden="true">🔔</span>
+                {notifications.some((notification) => !notification.read) && (
+                  <span className="admin-notification-count">
+                    {notifications.filter((notification) => !notification.read).length}
+                  </span>
+                )}
+              </button>
+
+              {isNotificationOpen && (
+                <div className="admin-notification-panel">
+                  <div className="admin-notification-heading">
+                    <strong>Notifications</strong>
+                    <button
+                      type="button"
+                      onClick={() => setNotifications([])}
+                    >
+                      Clear
+                    </button>
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <p className="admin-notification-empty">
+                      No new notifications.
+                    </p>
+                  ) : (
+                    notifications.map((notification) => (
+                      <button
+                        type="button"
+                        className="admin-notification-item"
+                        key={notification.id}
+                        onClick={() => {
+                          setActivePage("Palace Approvals");
+                          setIsNotificationOpen(false);
+                        }}
+                      >
+                        <span className="admin-notification-dot" />
+                        <span className="admin-notification-copy">
+                          <strong>{notification.title}</strong>
+                          <span>{notification.message}</span>
+                          <small>{notification.createdAt}</small>
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="admin-top-avatar">
               {(currentUser.name || "A").charAt(0).toUpperCase()}
             </div>
