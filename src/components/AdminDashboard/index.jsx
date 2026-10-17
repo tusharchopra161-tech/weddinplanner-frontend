@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./admindashboard.css";
+import { EnablePushNotification } from "../EnablePushNotification";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
@@ -309,7 +310,7 @@ const token=localStorage.getItem("token")
                 </div>
               )}
             </div>
-
+            <EnablePushNotification/>  
             <div className="admin-top-avatar">
               {(currentUser.name || "A").charAt(0).toUpperCase()}
             </div>
