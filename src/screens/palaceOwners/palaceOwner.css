@@ -1,7 +1,8 @@
-.po-main{
+/* .po-main{
     padding-left:16.5rem;
 
 }
+    
 .po-aside{
     padding:0 1rem;
     padding-top: 10px;
@@ -24,4 +25,316 @@ header{
     padding: 5px;
     margin-top: 0.5rem;
     
+} */
+
+/* Palace Owner Dashboard — responsive styling
+   Keep this file imported after Tailwind in PalaceOwners.jsx.
+   Layout and spacing overrides are handled here so the existing page structure stays intact. */
+
+.po-main {
+  --po-bg: #fcf6e9;
+  --po-surface: #fffdf8;
+  --po-border: #eadcc8;
+  --po-text: #382d25;
+  --po-muted: #947e69;
+  --po-accent: #6e4931;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: clip;
+  color: var(--po-text);
+  background: var(--po-bg);
+}
+
+.po-main,
+.po-main * {
+  box-sizing: border-box;
+}
+
+/* Sidebar */
+.po-main .po-aside {
+  width: 260px;
+  max-width: 86vw;
+  height: 100dvh;
+  padding: 24px 18px;
+  gap: 10px;
+  border-right: 1px solid var(--po-border);
+  box-shadow: 8px 0 30px rgb(68 43 24 / 5%);
+  overscroll-behavior: contain;
+}
+
+.po-main .po-aside > div:first-child {
+  margin: 0 0 28px;
+  gap: 12px;
+}
+
+.po-main .po-aside nav {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.po-main .po-aside nav button {
+  min-height: 44px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.po-main .po-aside nav button:hover {
+  transform: translateX(2px);
+}
+
+.po-main .poasidebottom {
+  height: auto;
+  min-height: 0;
+  margin-top: auto;
+  gap: 22px;
+}
+
+.po-main .poasidebottomb {
+  padding: 15px;
+  border-radius: 16px;
+}
+
+/* Main content and fixed header */
+.po-main > main {
+  min-width: 0;
+  width: auto;
+  margin-left: 260px;
+}
+
+.po-main > main > header {
+  left: 260px;
+  right: 0;
+  width: auto;
+  min-height: 72px;
+  padding: 12px 28px;
+  gap: 16px;
+  background: rgb(252 246 233 / 94%);
+  border-bottom: 1px solid var(--po-border);
+  box-shadow: 0 4px 18px rgb(68 43 24 / 3%);
+}
+
+.po-main .hmain {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 104px 30px 32px;
+}
+
+.po-main .hmain > section {
+  min-width: 0;
+}
+
+/* Overview heading */
+.po-main .hmain > section:first-of-type {
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.po-main .hmain h1,
+.po-main .hmain h2,
+.po-main .hmain h3,
+.po-main .hmain h4,
+.po-main .hmain p {
+  overflow-wrap: anywhere;
+}
+
+/* Statistics */
+.po-main .porm {
+  padding: 22px;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgb(82 57 34 / 3%);
+}
+
+.po-main .porm:hover {
+  box-shadow: 0 12px 28px rgb(82 57 34 / 8%);
+}
+
+/* Dashboard cards */
+.po-main .hmain section > div,
+.po-main .hmain section > article {
+  min-width: 0;
+}
+
+.po-main .hmain .rounded-2xl.border.bg-white\/80 {
+  border-color: var(--po-border);
+  box-shadow: 0 5px 20px rgb(82 57 34 / 3%);
+}
+
+.po-main .hmain img {
+  max-width: 100%;
+}
+
+/* Inputs */
+.po-main input,
+.po-main textarea,
+.po-main select {
+  max-width: 100%;
+  min-width: 0;
+  font: inherit;
+}
+
+.po-main input:focus,
+.po-main textarea:focus,
+.po-main select:focus {
+  outline: none;
+  border-color: #98714d;
+  box-shadow: 0 0 0 3px rgb(152 113 77 / 12%);
+}
+
+.po-main button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.po-main button:focus-visible,
+.po-main input:focus-visible,
+.po-main textarea:focus-visible {
+  outline: 2px solid #98714d;
+  outline-offset: 2px;
+}
+
+/* Booking table: keep columns readable and scroll inside the table container */
+.po-main .overflow-x-auto {
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.po-main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.po-main th,
+.po-main td {
+  vertical-align: middle;
+}
+
+.po-main footer {
+  gap: 10px;
+}
+
+/* Tablet */
+@media (max-width: 1023px) {
+  .po-main > main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .po-main > main > header {
+    left: 0;
+    min-height: 66px;
+    padding: 11px 20px;
+  }
+
+  .po-main .hmain {
+    padding: 92px 22px 28px;
+  }
+
+  .po-main .po-aside {
+    z-index: 50;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .po-main > main > header {
+    min-height: 62px;
+    padding: 9px 12px;
+    gap: 8px;
+  }
+
+  .po-main > main > header > div:first-child {
+    gap: 8px;
+  }
+
+  .po-main > main > header h2 {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .po-main > main > header .ml-auto {
+    gap: 8px;
+  }
+
+  .po-main > main > header button {
+    min-width: 38px;
+    min-height: 38px;
+  }
+
+  .po-main .hmain {
+    padding: 82px 13px 22px;
+  }
+
+  .po-main .hmain > section:first-of-type {
+    margin-bottom: 22px;
+    gap: 15px;
+  }
+
+  .po-main .hmain > section:first-of-type h1 {
+    font-size: 25px;
+    line-height: 1.25;
+  }
+
+  .po-main .hmain > section:first-of-type > button {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .po-main .porm {
+    padding: 17px;
+    border-radius: 15px;
+  }
+
+  .po-main .hmain .rounded-2xl.border.bg-white\/80 {
+    border-radius: 16px;
+  }
+
+  .po-main .po-aside {
+    padding: 20px 15px;
+  }
+
+  .po-main .poasidebottom {
+    margin-top: 26px;
+  }
+
+  .po-main .hmain section .relative.mx-5 {
+    margin-left: 13px;
+    margin-right: 13px;
+  }
+
+  .po-main .hmain section .relative.mx-5 img {
+    height: 190px;
+  }
+
+  .po-main .hmain form {
+    gap: 16px;
+  }
+
+  .po-main .hmain label {
+    min-width: 0;
+  }
+
+  .po-main .hmain input,
+  .po-main .hmain textarea,
+  .po-main .hmain select {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .po-main .hmain footer {
+    padding-top: 16px;
+    line-height: 1.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .po-main *,
+  .po-main *::before,
+  .po-main *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
 }
