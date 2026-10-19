@@ -1,141 +1,167 @@
-import React from 'react'
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-// const API_URL = import.meta.env.BACKEND_URL;
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./signup.css";
+
 export const Signup = () => {
-   const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate=useNavigate()
-  const [form,setForm]=useState({
-    name:"",
-    mobileno:"",
-    email:"",
-    password:"",
-    role:"user"
-  })
-  const handleChange= (e)=>{
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    mobileno: "",
+    email: "",
+    password: "",
+    role: "user",
+  });
+
+  const handleChange = (e) => {
     setForm({
       ...form,
-      [e.target.name]:e.target.value,
+      [e.target.name]: e.target.value,
     });
   };
 
-   const handleSubmit= async(e)=>{
-    console.log(form)
-   e.preventDefault();
-   setMessage("");
-   try{
-    setLoading(true);
-    const res=await fetch(`https://weddingplanner-backend.onrender.com/user`,{
-      method:"post",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify(form)
-    });
-    const resjson=await res.json()
-    console.log(resjson)
-    if(resjson){
-      navigate("/login")
-    }else{
-      setMessage(resjson.message || "Signup failed");
-      navigate("/signup")
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+
+    try {
+      setLoading(true);
+
+      const res = await fetch("https://weddingplanner-backend.onrender.com/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
+
+      const resjson = await res.json();
+
+      if (res.ok && resjson.success) {
+        navigate("/login");
+      } else {
+        setMessage(resjson.message || "Signup failed. Please check your details.");
+      }
+    } catch (err) {
+      setMessage("Unable to connect to the server. Please try again.");
+    } finally {
+      setLoading(false);
     }
-   }catch(err){
-    setMessage("Unable to connect to the server. Please try again.");
-   }finally{
-     setLoading(false);
-   }
-  }
+  };
+
   return (
-    
-    <div className="w-full min-h-screen flex items-center justify-center bg-red-200 bg-[#faf7f8] px-5 py-10">
+    <main className="signup-page">
+      <form className="signup-card" onSubmit={handleSubmit}>
+        <div className="signup-heading">
+          <h1>Create Your Account</h1>
+          <p>Start planning your perfect wedding with us</p>
+        </div>
 
-  <form
-    onSubmit={handleSubmit}
-    className="w-[100vh] max-w-[510px] flex flex-col gap-5 items-center bg-white/70 backdrop-blur-xl p-8 md:p-10 rounded-[30px] shadow-[0_20px_60px_rgba(105,32,101,0.12)] border border-red-200"
-  >
+        <div className="signup-fields">
+          <label className="signup-label" htmlFor="signup-name">
+            Full Name
+          </label>
+          <input
+            className="signup-input"
+            type="text"
+            id="signup-name"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Enter your full name"
+            autoComplete="name"
+            required
+          />
 
-    <div className="text-center mb-3">
-      <h1 className="text-[#692065] text-4xl font-bold">
-        Create Your Account
-      </h1>
+          <label className="signup-label" htmlFor="signup-mobileno">
+            Mobile Number
+          </label>
+          <input
+            className="signup-input"
+            type="tel"
+            id="signup-mobileno"
+            name="mobileno"
+            value={form.mobileno}
+            onChange={handleChange}
+            placeholder="Enter your mobile number"
+            autoComplete="tel"
+            inputMode="numeric"
+            pattern="[0-9]{10}"
+            maxLength={10}
+            required
+          />
 
-      <p className="text-gray-500 mt-2 text-sm">
-        Start planning your perfect wedding with us
-      </p>
-    </div>
+          <label className="signup-label" htmlFor="signup-email">
+            Email Address
+          </label>
+          <input
+            className="signup-input"
+            type="email"
+            id="signup-email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            placeholder="Enter your email address"
+            autoComplete="email"
+            required
+          />
 
-    <input
-      className="w-[80%] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400"
-      type="text"
-      name="name"
-      value={form.name}
-      onChange={handleChange}
-      placeholder="Full Name"
-    />
+          <label className="signup-label" htmlFor="signup-password">
+            Password
+          </label>
+          <input
+            className="signup-input"
+            type="password"
+            id="signup-password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Create a password"
+            autoComplete="new-password"
+            required
+          />
 
-    <input
-      className="w-[80%] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400"
-      type="number"
-      name="mobileno"
-      value={form.mobileno}
-      onChange={handleChange}
-      placeholder="Mobile Number"
-    />
-
-    <input
-      className="w-[80%] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400"
-      type="email"
-      name="email"
-      value={form.email}
-      onChange={handleChange}
-      placeholder="Email Address"
-    />
-
-    <input
-      className="w-[80%] h-14 rounded-2xl border border-gray-200 bg-white px-5 text-base outline-none transition focus:border-[#692065] focus:ring-2 focus:ring-[#692065]/20 placeholder:text-gray-400"
-      type="password"
-      name="password"
-      value={form.password}
-      onChange={handleChange}
-      placeholder="Password"
-    />
-    <div className="w-[80%]">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <label className="signup-label" htmlFor="signup-role">
             Create account as
           </label>
-
           <select
+            className="signup-input signup-select"
+            id="signup-role"
             name="role"
             value={form.role}
             onChange={handleChange}
-            className="w-full h-14 rounded-2xl border border-gray-200 bg-white px-5 outline-none focus:border-[#692065]"
+            required
           >
             <option value="user">User — Plan my wedding</option>
             <option value="owner">Palace Owner — List my palace</option>
           </select>
         </div>
+
         {message && (
-          <p className="w-[80%] text-sm text-red-600 text-center">
+          <p className="signup-message" role="alert">
             {message}
           </p>
         )}
-    <button
-      type="submit"
-      className="w-[80%] h-14 mt-2 rounded-2xl bg-[#692065] text-white text-lg font-semibold shadow-lg shadow-[#692065]/20 transition duration-300 hover:bg-[#541950] hover:scale-[1.01] active:scale-[0.98]"
-    >
-     {loading ? "Creating Account..." : "Create Account"}
-    </button>
 
-    <p className="text-center text-sm text-gray-500 mt-1">
-      Already have an account?
-      <button onClick={()=>{navigate("/login")}} className="text-[#692065] font-semibold ml-1 cursor-pointer">
-        Login
-      </button>
-    </p>
+        <button className="signup-submit" type="submit" disabled={loading}>
+          {loading ? "Creating Account..." : "Create Account"}
+        </button>
 
-  </form>
-</div>
-  )
-}
+        <p className="signup-footer">
+          Already have an account?
+          <button
+            type="button"
+            className="signup-login"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </button>
+        </p>
+      </form>
+    </main>
+  );
+};
+
+export default Signup;
