@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { RiBankLine } from "react-icons/ri";
-import { MdOutlineDashboard, MdOutlinePhotoSizeSelectActual, MdOutlinePayment } from "react-icons/md";
+
+import { useEffect, useState } from "react";
+import {
+  RiBankLine,
+} from "react-icons/ri";
+import {
+  MdOutlineDashboard,
+  MdOutlinePhotoSizeSelectActual,
+  MdOutlinePayment,
+} from "react-icons/md";
 import { SlCalender } from "react-icons/sl";
 import { IoSettingsOutline } from "react-icons/io5";
 import { LuCalendarCheck } from "react-icons/lu";
@@ -15,14 +22,15 @@ import {
   FiCheckCircle,
   FiXCircle,
   FiTrendingUp,
-  FiMoreHorizontal,
   FiArrowUpRight,
-  FiCalendar,
   FiEdit2,
 } from "react-icons/fi";
-import './palaceOwner.css'
-import { VenueCreation } from "../../components/VenueCreation";
 import { io } from "socket.io-client";
+import { VenueCreation } from "../../components/VenueCreation";
+import  "./palaceOwner.css"
+
+const API_URL = "https://weddingplanner-backend.onrender.com";
+
 const menuItems = [
   { name: "Overview", icon: MdOutlineDashboard },
   { name: "Palace Details", icon: RiBankLine },
@@ -33,47 +41,248 @@ const menuItems = [
   { name: "Settings", icon: IoSettingsOutline },
 ];
 
-const bookingsData = [
-  { id: "BK-1024", name: "Aarav Sharma", event: "Wedding Ceremony", date: "18 Oct 2026", guests: 500, amount: 125000, status: "Pending", initials: "AS", color: "bg-amber-100 text-amber-800" },
-  { id: "BK-1023", name: "Priya Mehta", event: "Engagement", date: "22 Oct 2026", guests: 250, amount: 75000, status: "Confirmed", initials: "PM", color: "bg-rose-100 text-rose-700" },
-  { id: "BK-1022", name: "Rohan Kapoor", event: "Reception", date: "25 Oct 2026", guests: 800, amount: 180000, status: "Pending", initials: "RK", color: "bg-blue-100 text-blue-700" },
-  { id: "BK-1021", name: "Ananya Verma", event: "Wedding Ceremony", date: "02 Nov 2026", guests: 400, amount: 110000, status: "Confirmed", initials: "AV", color: "bg-purple-100 text-purple-700" },
+// Sample bookings for the dashboard UI.
+// Replace with your real booking API when it is connected.
+const initialBookings = [
+  {
+    id: "BK-1024",
+    name: "Aarav Sharma",
+    event: "Wedding Ceremony",
+    date: "18 Oct 2026",
+    guests: 500,
+    amount: 125000,
+    status: "Pending",
+  },
+  {
+    id: "BK-1023",
+    name: "Priya Mehta",
+    event: "Engagement",
+    date: "22 Oct 2026",
+    guests: 250,
+    amount: 75000,
+    status: "Confirmed",
+  },
+  {
+    id: "BK-1022",
+    name: "Rohan Kapoor",
+    event: "Reception",
+    date: "25 Oct 2026",
+    guests: 800,
+    amount: 180000,
+    status: "Pending",
+  },
+  {
+    id: "BK-1021",
+    name: "Ananya Verma",
+    event: "Wedding Ceremony",
+    date: "02 Nov 2026",
+    guests: 400,
+    amount: 110000,
+    status: "Confirmed",
+  },
 ];
 
-const stats = [
-  { title: "Total Bookings", value: "128", change: "+12.5%", description: "vs. last month", icon: SlCalender, color: "bg-[#F5E6D1] text-[#986A3C]" },
-  { title: "Pending Requests", value: "08", change: "Needs action", description: "Awaiting your response", icon: FiClock, color: "bg-[#FCE8D5] text-[#B77935]" },
-  { title: "Total Earnings", value: "₹8.45L", change: "+18.2%", description: "vs. last month", icon: FiTrendingUp, color: "bg-[#DCEBDD] text-[#42734B]" },
-  { title: "Confirmed Events", value: "24", change: "This month", description: "Scheduled events", icon: FiCheckCircle, color: "bg-[#E5E2F8] text-[#6E60A8]" },
-];
+const emptyPalace = {
+  name: "",
+  location: "",
+  price: "",
+  capacity: "",
+  description: "",
+  Images: [],
+  facilities: [],
+};
 
-const upcomingEvents = [
-  { day: "18", month: "OCT", name: "Aarav & Family", type: "Wedding Ceremony", time: "10:00 AM" },
-  { day: "22", month: "OCT", name: "Priya Mehta", type: "Engagement", time: "05:00 PM" },
-  { day: "25", month: "OCT", name: "Rohan Kapoor", type: "Wedding Reception", time: "07:00 PM" },
-];
+const getInitials = (name = "") => {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("") || "PO";
+};
 
 export const PalaceOwners = () => {
   const [activeTab, setActiveTab] = useState("Overview");
-  const [bookings, setBookings] = useState(bookingsData);
+  const [bookings, setBookings] = useState(initialBookings);
   const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [notice, setNotice] = useState("");
-  const emptyPalace = {
-    name: "",
-    location: "",
-    price: "",
-    capacity: "",
-    description: "",
-    Images: "",
-    facilities: "",
-  };
+  const [owner] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("currentUser")) || {};
+    } catch {
+      return {};
+    }
+  });
   const [palaceForm, setPalaceForm] = useState(emptyPalace);
   const [palaceId, setPalaceId] = useState(null);
   const [palaceStatus, setPalaceStatus] = useState("");
   const [loadingPalace, setLoadingPalace] = useState(true);
-  const [savingPalace, setSavingPalace] = useState(false);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
+
+  useEffect(() => {
+    if (!notice) return undefined;
+
+    const timer = setTimeout(() => setNotice(""), 3000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkMyPalace = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("Please log in again to continue.");
+        }
+
+        const response = await fetch(`${API_URL}/palace/my`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load your palace.");
+        }
+
+        const myPalaces = Array.isArray(data.palace)
+          ? data.palace
+          : [];
+
+        if (!isMounted) return;
+
+        if (myPalaces.length === 0) {
+          setShowCreateWizard(true);
+          return;
+        }
+
+        const palace = myPalaces[0];
+
+        setShowCreateWizard(false);
+        setPalaceId(palace._id);
+        setPalaceStatus(palace.status || "pending");
+
+        setPalaceForm({
+          name: palace.name || "",
+          location: palace.location || "",
+          price: palace.price ?? "",
+          capacity: palace.capacity ?? "",
+          description: palace.description || "",
+          Images: Array.isArray(palace.Images) ? palace.Images : [],
+          facilities: Array.isArray(palace.facilities)
+            ? palace.facilities
+            : [],
+        });
+      } catch (error) {
+        console.error("Load palace error:", error);
+
+        if (isMounted) {
+          setNotice(error.message || "Unable to load your palace.");
+        }
+      } finally {
+        if (isMounted) setLoadingPalace(false);
+      }
+    };
+
+    checkMyPalace();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return undefined;
+
+    const socket = io(API_URL, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("palace-status-updated", (data) => {
+      if (
+        palaceId &&
+        String(data.palaceId) !== String(palaceId)
+      ) {
+        return;
+      }
+
+      setPalaceStatus(data.status || "");
+      setNotice(
+        data.message ||
+          `Your palace status is now ${data.status || "updated"}.`
+      );
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Owner Socket.IO error:", error.message);
+    });
+
+    return () => socket.disconnect();
+  }, [palaceId]);
+
+  const money = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(Number(amount) || 0);
+
+  const pendingCount = bookings.filter(
+    (booking) => booking.status === "Pending"
+  ).length;
+
+  const confirmedBookings = bookings.filter(
+    (booking) => booking.status === "Confirmed"
+  );
+
+  const totalBookingValue = confirmedBookings.reduce(
+    (total, booking) => total + booking.amount,
+    0
+  );
+
+  const filteredBookings = bookings.filter((booking) =>
+    `${booking.name} ${booking.event} ${booking.id}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const statusInfo = (() => {
+    switch (palaceStatus.toLowerCase()) {
+      case "approved":
+        return {
+          label: "Approved",
+          message:
+            "Your palace has been approved and can be displayed to customers.",
+          className: "po-status-approved",
+        };
+
+      case "rejected":
+        return {
+          label: "Rejected",
+          message:
+            "Your palace was rejected. Please contact the admin for further details.",
+          className: "po-status-rejected",
+        };
+
+      default:
+        return {
+          label: "Pending Approval",
+          message:
+            "Your palace is waiting for admin approval.",
+          className: "po-status-pending",
+        };
+    }
+  })();
 
   const handleBooking = (id, status) => {
     setBookings((previous) =>
@@ -81,261 +290,153 @@ export const PalaceOwners = () => {
         booking.id === id ? { ...booking, status } : booking
       )
     );
+
     setNotice(
-      status === "Confirmed"
-        ? "Booking accepted successfully."
-        : "Booking rejected successfully."
+      "Booking updated in this dashboard only. Connect the booking API to save this change."
     );
-
-    setTimeout(() => setNotice(""), 2500);
   };
 
-  const filteredBookings = bookings.filter((booking) =>
-    `${booking.name} ${booking.event} ${booking.id}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
-  const money = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  const getPalaceStatusInfo = (status) => {
-    switch (status?.toLowerCase()) {
-      case "approved":
-        return {
-          label: "Approved",
-          message: "Your palace has been approved and is visible to customers.",
-          className: "bg-green-100 text-green-800 border-green-200",
-        };
+  const handlePalaceField = (event) => {
+    const { name, value } = event.target;
 
-      case "rejected":
-        return {
-          label: "Rejected",
-          message: "Your palace was rejected by the admin. Please contact the admin for details.",
-          className: "bg-red-100 text-red-800 border-red-200",
-        };
-
-      default:
-        return {
-          label: "Pending Approval",
-          message: "Your palace is waiting for root admin approval.",
-          className: "bg-amber-100 text-amber-800 border-amber-200",
-        };
-    }
+    setPalaceForm((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
   };
-  const statusInfo = getPalaceStatusInfo(palaceStatus);
-  useEffect(() => {
-    const checkMyPalace = async () => {
-      try {
-        const token = localStorage.getItem("token");
 
-        if (!token) {
-          setNotice("Please log in again to continue.");
-          return;
-        }
+  const handlePalaceFormSubmit = (event) => {
+    event.preventDefault();
 
-        const response = await fetch(
-          "https://weddingplanner-backend.onrender.com/palace/my",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || "Failed to check your venue.");
-        }
-
-        const myPalaces = Array.isArray(data.palace)
-          ? data.palace
-          : [];
-
-        if (myPalaces.length === 0) {
-          setShowCreateWizard(true);
-        } else {
-          setShowCreateWizard(false);
-
-          const palace = myPalaces[0];
-
-          setPalaceId(palace._id);
-          setPalaceStatus(palace.status || "");
-          setPalaceForm({
-            name: palace.name || "",
-            location: palace.location || "",
-            price: palace.price ?? "",
-            capacity: palace.capacity ?? "",
-            description: palace.description || "",
-            Images: Array.isArray(palace.Images)
-              ? palace.Images
-              : [],
-            facilities: Array.isArray(palace.facilities)
-              ? palace.facilities
-              : [],
-          });
-        }
-      } catch (error) {
-        console.error("Check my palace error:", error);
-        setNotice(error.message || "Unable to load your venue.");
-      } finally {
-        setLoadingPalace(false);
-      }
-    };
-    checkMyPalace();
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) return;
-
-    const socket = io(
-      "https://weddingplanner-backend.onrender.com",
-      {
-        auth: { token },
-        transports: ["websocket", "polling"],
-      }
+    setNotice(
+      "Changes are currently a local preview. A backend palace-update route is required to save them permanently."
     );
+  };
 
-    socket.on("connect", () => {
-      console.log("Owner connected to palace updates");
-    });
+  const handlePhotoSelection = (event) => {
+    const files = Array.from(event.target.files || []);
 
-    socket.on("palace-status-updated", (data) => {
-      // Ignore updates for a different palace
-      if (data.palaceId !== palaceId) return;
+    setSelectedPhotos((previous) => [
+      ...previous,
+      ...files.map((file) => ({
+        name: file.name,
+        url: URL.createObjectURL(file),
+      })),
+    ]);
 
-      // Update the status without refreshing the page
-      setPalaceStatus(data.status);
+    event.target.value = "";
+  };
 
-      setNotice(data.message || `Your palace has been ${data.status}.`);
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("Owner Socket.IO error:", error.message);
-    });
-
+  useEffect(() => {
     return () => {
-      socket.disconnect();
+      selectedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     };
-  }, [palaceId]);
+  }, [selectedPhotos]);
 
+  const displayName = palaceForm.name || owner.name || "Palace Owner";
+  const initials = getInitials(displayName);
+  const today = new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   if (loadingPalace) {
     return (
-      <div className="po-main min-h-screen flex items-center justify-center bg-[#FCF6E9] text-[#382D25]">
-        <p>Checking your venue...</p>
+      <div className="po-loading">
+        <div className="po-loader" />
+        <p>Checking your palace...</p>
       </div>
     );
   }
+
   if (showCreateWizard) {
     return <VenueCreation />;
   }
 
   return (
-    <div className="po-main min-h-screen w-full overflow-x-hidden bg-[#FCF6E9] text-[#382D25]">
-      {/* Mobile overlay */}
+    <div className="venue-workspace po-dashboard">
       {mobileMenu && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+        <button
+          type="button"
+          className="po-mobile-overlay"
+          aria-label="Close navigation menu"
           onClick={() => setMobileMenu(false)}
         />
       )}
 
-      <aside
-        className={`po-aside h-screen fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[85vw] flex-col overflow-y-auto border-r border-[#E9D8C0] bg-[#F7EFE2] p-5 transition-transform duration-300 gap-2 lg:translate-x-0 ${mobileMenu ? "translate-x-0" : "-translate-x-full"
-          }`}
-      >
-        <div className="mb-8 flex shrink-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#6E4931] text-2xl text-white">
+      <aside className={`po-sidebar ${mobileMenu ? "po-sidebar-open" : ""}`}>
+        <div className="po-brand">
+          <div className="po-brand-icon">
             <RiBankLine />
           </div>
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">Wedora</h1>
-            <p className="text-xs tracking-widest text-[#967C66]">
-              PALACE PARTNER
-            </p>
+          <div>
+            <strong>Wedora</strong>
+            <span>PALACE PARTNER</span>
           </div>
         </div>
 
-        <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[2px] text-[#A18C77]">
-          Workspace
-        </p>
+        <p className="po-sidebar-label">WORKSPACE</p>
 
-        <nav className="space-y-1 flex flex-col gap-4">
+        <nav className="po-navigation">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const active = activeTab === item.name;
+            const isActive = activeTab === item.name;
 
             return (
               <button
+                type="button"
                 key={item.name}
+                className={`po-nav-item ${isActive ? "active" : ""}`}
                 onClick={() => {
                   setActiveTab(item.name);
                   setMobileMenu(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${active
-                  ? "bg-[#6E4931] text-white shadow-md shadow-[#6E4931]/15"
-                  : "text-[#786555] hover:bg-[#EEE1CF] hover:text-[#493526]"
-                  }`}
               >
-                <Icon className="shrink-0 text-xl" />
+                <Icon />
                 <span>{item.name}</span>
-                {item.name === "Bookings" && (
-                  <span
-                    className={`ml-auto rounded-full px-2 py-0.5 text-xs ${active
-                      ? "bg-white/20 text-white"
-                      : "bg-[#EAD5B8] text-[#785330]"
-                      }`}
-                  >
-                    {bookings.filter((b) => b.status === "Pending").length}
-                  </span>
+
+                {item.name === "Bookings" && pendingCount > 0 && (
+                  <span className="po-nav-count">{pendingCount}</span>
                 )}
               </button>
             );
           })}
         </nav>
 
-        <div className="poasidebottom flex flex-col justify-between h-[18rem]">
-          <div className="poasidebottomb  rounded-2xl border border-[#E9D8C0] bg-[#FDF8EF] p-4">
-            <div className="mb-2 flex items-center gap-2 text-[#795638]">
-              <FiCalendar />
-              <span className="text-sm font-semibold">Upcoming event</span>
+        <div className="po-sidebar-bottom">
+          <div className="po-upcoming-card">
+            <div className="po-upcoming-heading">
+              <FiCalendarIcon />
+              <strong>Booking requests</strong>
             </div>
-            <p className="text-lg font-bold">18 October</p>
-            <p className="mt-1 text-xs text-[#96816C]">
-              Wedding ceremony · 500 guests
+
+            <p className="po-upcoming-number">{pendingCount}</p>
+            <p className="po-muted-text">
+              Requests awaiting your response
             </p>
+
             <button
-              onClick={() => {
-                setActiveTab("Bookings");
-                setMobileMenu(false);
-              }}
-              className="mt-3 text-sm font-semibold text-[#805638] hover:underline"
+              type="button"
+              className="po-text-button"
+              onClick={() => setActiveTab("Bookings")}
             >
-              View booking →
+              View bookings <span>→</span>
             </button>
           </div>
 
-          <div className="flex  items-center gap-3 border-t border-[#E4D6C4] pt-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E7D1B5] font-bold text-[#714C30]">
-              RP
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">Royal Palace</p>
-              <p className="text-xs text-[#9A826B]">Palace Owner</p>
+          <div className="po-profile">
+            <span className="po-profile-avatar">{initials}</span>
+            <div className="po-profile-info">
+              <strong>{displayName}</strong>
+              <small>Palace Owner</small>
             </div>
             <button
+              type="button"
+              className="po-settings-button"
               title="Settings"
-              onClick={() => {
-                setActiveTab("Settings");
-                setMobileMenu(false);
-              }}
-              className="shrink-0 text-lg text-[#806D5A]"
+              onClick={() => setActiveTab("Settings")}
             >
               <IoSettingsOutline />
             </button>
@@ -343,699 +444,711 @@ export const PalaceOwners = () => {
         </div>
       </aside>
 
-
-      <main className="min-w-0 w-full lg:ml-[260px]">
-
-        <header className="fixed top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-[#EDE2D1] bg-[#FCF6E9]/95 backdrop-blur sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+      <main className="po-main">
+        <header className="po-topbar">
+          <div className="po-topbar-left">
             <button
+              type="button"
+              className="po-menu-button"
               onClick={() => setMobileMenu(true)}
-              className="rounded-lg p-2 hover:bg-[#F0E4D2] lg:hidden"
+              aria-label="Open navigation menu"
             >
-              <FiMenu className="text-xl" />
+              <FiMenu />
             </button>
-            <div className="min-w-0">
-              <p className="truncate text-xs text-[#9A826B]">
-                Workspace / {activeTab}
-              </p>
-              <h2 className="truncate text-lg font-bold sm:text-xl">
-                {activeTab}
-              </h2>
+
+            <div>
+              <p className="po-breadcrumb">Workspace / {activeTab}</p>
+              <h2>{activeTab}</h2>
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-3 sm:gap-5">
-            <div className="hidden items-center gap-2 rounded-xl border border-[#E8DDCC] bg-white/70 px-3 py-2 md:flex">
-              <FiSearch className="shrink-0 text-[#9A826B]" />
+          <div className="po-topbar-right">
+            <div className="po-search-box">
+              <FiSearch />
               <input
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search bookings..."
-                className="w-36 bg-transparent text-sm outline-none placeholder:text-[#B2A18D] lg:w-48"
+                aria-label="Search bookings"
               />
             </div>
 
-            <button className="relative shrink-0 rounded-xl border border-[#E8DDCC] bg-white/70 p-2.5">
-              <FiBell className="text-lg" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#B86B43]" />
+            <button
+              type="button"
+              className="po-notification-button"
+              title="Notifications"
+              onClick={() =>
+                setNotice(
+                  palaceStatus
+                    ? `Current palace status: ${statusInfo.label}`
+                    : "No new palace status information."
+                )
+              }
+            >
+              <FiBell />
+              {palaceStatus.toLowerCase() === "pending" && (
+                <span className="po-notification-dot" />
+              )}
             </button>
 
-            <div className="hidden h-9 w-px bg-[#E5D8C7] sm:block" />
-
-            <div className="flex items-center gap-2">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-bold">Royal Palace</p>
-                <p className="text-xs text-[#99836D]">Verified Partner</p>
+            <div className="po-topbar-profile">
+              <div className="po-topbar-profile-copy">
+                <strong>{displayName}</strong>
+                <span>Palace Partner</span>
               </div>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6E4931] font-bold text-white">
-                RP
-              </div>
+              <span className="po-avatar">{initials}</span>
             </div>
           </div>
         </header>
 
-        <div className="hmain mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8">
+        <div className="po-content">
           {notice && (
-            <div className="mb-5 rounded-xl border border-[#D8C7AC] bg-[#F4E8D5] px-4 py-3 text-sm font-medium text-[#63462D]">
-              {notice}
+            <div className="po-notice" role="status">
+              <span>{notice}</span>
+              <button
+                type="button"
+                aria-label="Dismiss notification"
+                onClick={() => setNotice("")}
+              >
+                ×
+              </button>
             </div>
-
           )}
+
           {palaceId && (
-            <div
-              className={`mb-5 rounded-xl border px-4 py-4 ${statusInfo.className}`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-bold">
-                  Palace Status: {statusInfo.label}
-                </p>
+            <div className={`po-status-banner ${statusInfo.className}`}>
+              <div>
+                <strong>Palace Status: {statusInfo.label}</strong>
+                <p>{statusInfo.message}</p>
               </div>
-              <p className="mt-1 text-sm">
-                {statusInfo.message}
-              </p>
+              <span className="po-status-icon">
+                {palaceStatus.toLowerCase() === "approved" ? (
+                  <FiCheckCircle />
+                ) : (
+                  <FiClock />
+                )}
+              </span>
             </div>
           )}
 
           {activeTab === "Overview" && (
             <>
-
-              <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
-                <div className="min-w-0">
-                  <p className="mb-2 text-sm text-[#A08365]">
-                    Friday, October 9, 2026
-                  </p>
-                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                    Welcome back, Royal Palace
-                  </h1>
-                  <p className="mt-2 text-sm text-[#947E69]">
-                    Here's what's happening with your venue today.
+              <section className="po-page-heading">
+                <div>
+                  <span className="po-eyebrow">OWNER DASHBOARD</span>
+                  <h1>Welcome back, {displayName}</h1>
+                  <p>
+                    {today}. Here is an overview of your palace workspace.
                   </p>
                 </div>
 
                 <button
+                  type="button"
+                  className="po-primary-button"
                   onClick={() => setActiveTab("Palace Details")}
-                  className="flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-[#6E4931] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#6E4931]/15 transition hover:bg-[#523622] sm:self-auto"
                 >
-                  <FiPlus className="text-lg" />
-                  Edit Palace Details
+                  <FiEdit2 /> Edit Palace Details
                 </button>
               </section>
 
-              {/* Statistics */}
-              <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-                {stats.map((stat) => {
-                  const Icon = stat.icon;
+              <section className="po-stats-grid">
+                <article className="po-stat-card">
+                  <span className="po-stat-icon po-icon-brown">
+                    <SlCalender />
+                  </span>
+                  <p>Total Bookings</p>
+                  <h3>{bookings.length}</h3>
+                  <small>Sample dashboard data</small>
+                </article>
 
-                  return (
-                    <div
-                      key={stat.title}
-                      className="porm min-w-0 rounded-2xl border border-[#EDE2D1] bg-white/80  transition hover:-translate-y-1 hover:shadow-lg hover:shadow-[#74563B]/5"
-                    >
-                      <div className="mb-5 flex items-center justify-between">
-                        <div
-                          className={`flex h-11 w-11 items-center justify-center rounded-xl text-xl ${stat.color}`}
-                        >
-                          <Icon />
-                        </div>
-                        <FiMoreHorizontal className="text-xl text-[#B5A38E]" />
-                      </div>
+                <article className="po-stat-card">
+                  <span className="po-stat-icon po-icon-gold">
+                    <FiClock />
+                  </span>
+                  <p>Pending Requests</p>
+                  <h3>{pendingCount}</h3>
+                  <small>Awaiting your response</small>
+                </article>
 
-                      <p className="text-sm text-[#99836D]">{stat.title}</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <h3 className="text-2xl font-bold">{stat.value}</h3>
-                        <span className="rounded-md bg-[#E7F1E5] px-2 py-1 text-xs font-semibold text-[#4C8051]">
-                          {stat.change}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-xs text-[#AA9884]">
-                        {stat.description}
-                      </p>
-                    </div>
-                  );
-                })}
+                <article className="po-stat-card">
+                  <span className="po-stat-icon po-icon-green">
+                    <FiTrendingUp />
+                  </span>
+                  <p>Confirmed Booking Value</p>
+                  <h3>{money(totalBookingValue)}</h3>
+                  <small>Based on sample bookings</small>
+                </article>
+
+                <article className="po-stat-card">
+                  <span className="po-stat-icon po-icon-purple">
+                    <FiCheckCircle />
+                  </span>
+                  <p>Confirmed Events</p>
+                  <h3>{confirmedBookings.length}</h3>
+                  <small>Sample dashboard data</small>
+                </article>
               </section>
 
-              {/* Palace information and upcoming events */}
-              <section className="mb-8 grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                <div className="min-w-0 overflow-hidden rounded-2xl border border-[#EDE2D1] bg-white/80">
-                  <div className="flex items-center justify-between gap-3 px-5 pt-5 sm:px-6">
-                    <div className="min-w-0">
-                      <h3 className="font-bold">Your Palace</h3>
-                      <p className="mt-1 text-xs text-[#A18B75]">
-                        Manage your venue profile
-                      </p>
+              <section className="po-overview-grid">
+                <article className="po-panel po-palace-card">
+                  <div className="po-panel-heading">
+                    <div>
+                      <h3>Your Palace</h3>
+                      <p>Manage your venue profile</p>
                     </div>
                     <button
+                      type="button"
+                      className="po-outline-button"
                       onClick={() => setActiveTab("Palace Details")}
-                      className="flex shrink-0 items-center gap-2 rounded-lg border border-[#E8DDCC] px-3 py-2 text-xs font-semibold hover:bg-[#F8F0E5]"
                     >
-                      <FiEdit2 />
-                      Edit
+                      <FiEdit2 /> Edit
                     </button>
                   </div>
 
-                  <div className="relative mx-5 mt-5 h-48 overflow-hidden rounded-xl sm:mx-6 sm:h-56">
+                  <div className="po-palace-cover">
                     <img
-                      src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=85"
-                      alt="Elegant wedding palace venue"
-                      className="h-full w-full object-cover"
+                      src={
+                        palaceForm.Images?.[0] ||
+                        "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=85"
+                      }
+                      alt={palaceForm.name || "Wedding palace"}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-xs backdrop-blur-md">
-                        <FiCheckCircle />
-                        Verified venue
+                    <div className="po-cover-shade" />
+                    <div className="po-cover-content">
+                      <span className="po-cover-badge">
+                        {palaceStatus.toLowerCase() === "approved" ? (
+                          <FiCheckCircle />
+                        ) : (
+                          <FiClock />
+                        )}
+                        {statusInfo.label}
                       </span>
-                      <h4 className="text-xl font-bold">Royal Palace</h4>
-                      <p className="mt-1 flex items-center gap-1 text-sm text-white/85">
-                        <FiMapPin className="shrink-0" />
-                        Sonipat, Haryana
+                      <h4>{palaceForm.name || "Your Palace"}</h4>
+                      <p>
+                        <FiMapPin />
+                        {palaceForm.location || "Location not added"}
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 p-5 sm:grid-cols-3 sm:px-6">
+                  <div className="po-palace-facts">
                     <div>
-                      <p className="text-xs text-[#A18B75]">Starting price</p>
-                      <p className="mt-1 font-bold">₹85,000</p>
+                      <span>Starting price</span>
+                      <strong>
+                        {palaceForm.price !== ""
+                          ? money(palaceForm.price)
+                          : "Not added"}
+                      </strong>
                     </div>
                     <div>
-                      <p className="text-xs text-[#A18B75]">Guest capacity</p>
-                      <p className="mt-1 font-bold">2,000 guests</p>
+                      <span>Guest capacity</span>
+                      <strong>
+                        {palaceForm.capacity
+                          ? `${palaceForm.capacity} guests`
+                          : "Not added"}
+                      </strong>
                     </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <p className="text-xs text-[#A18B75]">Gallery photos</p>
-                      <p className="mt-1 font-bold">12 photos</p>
+                    <div>
+                      <span>Gallery photos</span>
+                      <strong>{palaceForm.Images.length} photos</strong>
                     </div>
                   </div>
-                </div>
+                </article>
 
-                <div className="min-w-0 rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-6">
-                  <div className="mb-5 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="font-bold">Upcoming Events</h3>
-                      <p className="mt-1 text-xs text-[#A18B75]">
-                        Your next scheduled bookings
-                      </p>
+                <article className="po-panel">
+                  <div className="po-panel-heading">
+                    <div>
+                      <h3>Booking Overview</h3>
+                      <p>Current request summary</p>
                     </div>
                     <button
+                      type="button"
+                      className="po-text-button"
                       onClick={() => setActiveTab("Bookings")}
-                      className="shrink-0 text-sm font-semibold text-[#805638] hover:underline"
                     >
-                      View all
+                      View all →
                     </button>
                   </div>
 
-                  <div className="space-y-4">
-                    {upcomingEvents.map((event) => (
-                      <div
-                        key={event.day}
-                        className="flex items-center gap-3 rounded-xl border border-[#F0E6D8] p-3"
-                      >
-                        <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-[#F5E9D8] text-[#795638]">
-                          <span className="text-xl font-bold leading-none">
-                            {event.day}
-                          </span>
-                          <span className="mt-1 text-[10px] font-bold tracking-wider">
-                            {event.month}
-                          </span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold">
-                            {event.name}
-                          </p>
-                          <p className="mt-1 truncate text-xs text-[#9D8771]">
-                            {event.type}
-                          </p>
-                          <p className="mt-1 flex items-center gap-1 text-xs text-[#9D8771]">
-                            <FiClock className="shrink-0" />
-                            {event.time}
-                          </p>
-                        </div>
-                        <FiArrowUpRight className="shrink-0 text-lg text-[#9D8771]" />
+                  <div className="po-summary-list">
+                    <div>
+                      <span className="po-summary-icon">
+                        <FiClock />
+                      </span>
+                      <div>
+                        <strong>Pending requests</strong>
+                        <p>Waiting for your decision</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
+                      <b>{pendingCount}</b>
+                    </div>
 
-              {/* Booking requests */}
-              <section className="overflow-hidden rounded-2xl border border-[#EDE2D1] bg-white/80">
-                <div className="flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:px-6">
-                  <div className="min-w-0">
-                    <h3 className="font-bold">Recent Booking Requests</h3>
-                    <p className="mt-1 text-xs text-[#A18B75]">
-                      Review and manage your customer requests
+                    <div>
+                      <span className="po-summary-icon">
+                        <FiCheckCircle />
+                      </span>
+                      <div>
+                        <strong>Confirmed bookings</strong>
+                        <p>Bookings marked confirmed</p>
+                      </div>
+                      <b>{confirmedBookings.length}</b>
+                    </div>
+
+                    <div>
+                      <span className="po-summary-icon">
+                        <FiUsers />
+                      </span>
+                      <div>
+                        <strong>Guest capacity</strong>
+                        <p>Listed palace capacity</p>
+                      </div>
+                      <b>{palaceForm.capacity || "—"}</b>
+                    </div>
+                  </div>
+
+                  <div className="po-tip-card">
+                    <strong>Helpful tip</strong>
+                    <p>
+                      Keep your palace information, location and gallery
+                      updated to help customers understand your venue.
                     </p>
                   </div>
-
-                  <div className="flex min-w-0 gap-2">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#E8DDCC] px-3 py-2 md:hidden">
-                      <FiSearch className="shrink-0" />
-                      <input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search..."
-                        className="w-full min-w-0 bg-transparent text-sm outline-none"
-                      />
-                    </div>
-                    <button
-                      onClick={() => setActiveTab("Bookings")}
-                      className="shrink-0 whitespace-nowrap rounded-lg bg-[#F2E5D2] px-4 py-2 text-sm font-semibold text-[#785536] hover:bg-[#EAD8BE]"
-                    >
-                      All bookings
-                    </button>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] text-left">
-                    <thead>
-                      <tr className="border-y border-[#F0E6D8] bg-[#FCF8F1] text-xs text-[#A18B75]">
-                        <th className="px-6 py-4 font-semibold">CUSTOMER</th>
-                        <th className="px-4 py-4 font-semibold">EVENT</th>
-                        <th className="px-4 py-4 font-semibold">DATE</th>
-                        <th className="px-4 py-4 font-semibold">AMOUNT</th>
-                        <th className="px-4 py-4 font-semibold">STATUS</th>
-                        <th className="px-6 py-4 text-right font-semibold">
-                          ACTION
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredBookings.map((booking) => (
-                        <tr
-                          key={booking.id}
-                          className="border-b border-[#F3EBDD] last:border-0 hover:bg-[#FFFCF7]"
-                        >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold ${booking.color}`}
-                              >
-                                {booking.initials}
-                              </div>
-                              <div>
-                                <p className="whitespace-nowrap text-sm font-semibold">
-                                  {booking.name}
-                                </p>
-                                <p className="mt-1 text-xs text-[#AA9681]">
-                                  {booking.id}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <p className="whitespace-nowrap text-sm">
-                              {booking.event}
-                            </p>
-                            <p className="mt-1 flex items-center gap-1 whitespace-nowrap text-xs text-[#A18B75]">
-                              <FiUsers />
-                              {booking.guests} guests
-                            </p>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4 text-sm text-[#786555]">
-                            {booking.date}
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-4 text-sm font-bold">
-                            {money(booking.amount)}
-                          </td>
-                          <td className="px-4 py-4">
-                            <span
-                              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${booking.status === "Confirmed"
-                                ? "bg-[#E4F1E2] text-[#48784B]"
-                                : booking.status === "Rejected"
-                                  ? "bg-[#FBE5E0] text-[#A94D3B]"
-                                  : "bg-[#FFF0D6] text-[#A36D25]"
-                                }`}
-                            >
-                              {booking.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center justify-end gap-2">
-                              {booking.status === "Pending" ? (
-                                <>
-                                  <button
-                                    title="Accept booking"
-                                    onClick={() =>
-                                      handleBooking(booking.id, "Confirmed")
-                                    }
-                                    className="flex items-center gap-1 rounded-lg bg-[#E4F1E2] px-3 py-2 text-xs font-semibold text-[#48784B] transition hover:bg-[#CFE7CC]"
-                                  >
-                                    <FiCheckCircle />
-                                    Accept
-                                  </button>
-                                  <button
-                                    title="Reject booking"
-                                    onClick={() =>
-                                      handleBooking(booking.id, "Rejected")
-                                    }
-                                    className="flex items-center gap-1 rounded-lg bg-[#FBE5E0] px-3 py-2 text-xs font-semibold text-[#A94D3B] transition hover:bg-[#F4D0C8]"
-                                  >
-                                    <FiXCircle />
-                                    Reject
-                                  </button>
-                                </>
-                              ) : (
-                                <span className="text-xs text-[#A18B75]">
-                                  {booking.status === "Confirmed"
-                                    ? "Accepted"
-                                    : "Rejected"}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-
-                      {filteredBookings.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan="6"
-                            className="px-6 py-12 text-center text-sm text-[#A18B75]"
-                          >
-                            No bookings found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex flex-col justify-between gap-2 border-t border-[#F0E6D8] px-6 py-4 text-xs text-[#A18B75] sm:flex-row">
-                  <p>Showing {filteredBookings.length} booking requests</p>
-                  <p>Booking decisions update this dashboard locally.</p>
-                </div>
+                </article>
               </section>
+
+              <BookingTable
+                bookings={filteredBookings.slice(0, 4)}
+                money={money}
+                handleBooking={handleBooking}
+                setActiveTab={setActiveTab}
+                compact
+              />
             </>
           )}
 
-          {/* Palace details */}
           {activeTab === "Palace Details" && (
-            <section className="mx-auto max-w-3xl rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-8">
-              <h3 className="text-xl font-bold">Palace Details</h3>
-              <p className="mb-6 mt-2 text-sm text-[#99836D]">
-                Add or update your venue information.
-              </p>
+            <section className="po-panel po-form-panel">
+              <div className="po-section-heading">
+                <h3>Palace Details</h3>
+                <p>Review and edit your venue information.</p>
+              </div>
+
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setNotice("Palace details form submitted.");
-                  setTimeout(() => setNotice(""), 2500);
-                }}
-                className="grid grid-cols-1 gap-5 sm:grid-cols-2"
+                className="po-form-grid"
+                onSubmit={handlePalaceFormSubmit}
               >
-                {[
-                  ["Palace Name", "Royal Palace"],
-                  ["Location", "Sonipat, Haryana"],
-                  ["Starting Price (₹)", "85000"],
-                  ["Guest Capacity", "2000"],
-                ].map(([label, value]) => (
-                  <label key={label} className="block text-sm font-semibold">
-                    {label}
-                    <input
-                      defaultValue={value}
-                      required
-                      className="mt-2 w-full rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] px-4 py-3 font-normal outline-none focus:border-[#98714D]"
-                    />
-                  </label>
-                ))}
-                <label className="block text-sm font-semibold sm:col-span-2">
-                  Palace Description
-                  <textarea
-                    rows="4"
-                    placeholder="Describe your palace, facilities and amenities..."
-                    className="mt-2 w-full rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] px-4 py-3 font-normal outline-none focus:border-[#98714D]"
+                <label>
+                  Palace Name
+                  <input
+                    name="name"
+                    value={palaceForm.name}
+                    onChange={handlePalaceField}
+                    placeholder="Enter palace name"
+                    required
                   />
                 </label>
-                <button className="rounded-xl bg-[#6E4931] px-5 py-3 text-sm font-semibold text-white hover:bg-[#523622] sm:col-span-2">
-                  Save Palace Details
-                </button>
+
+                <label>
+                  Location
+                  <input
+                    name="location"
+                    value={palaceForm.location}
+                    onChange={handlePalaceField}
+                    placeholder="Enter palace location"
+                    required
+                  />
+                </label>
+
+                <label>
+                  Starting Price (₹)
+                  <input
+                    name="price"
+                    type="number"
+                    min="0"
+                    value={palaceForm.price}
+                    onChange={handlePalaceField}
+                    placeholder="Enter price"
+                    required
+                  />
+                </label>
+
+                <label>
+                  Guest Capacity
+                  <input
+                    name="capacity"
+                    type="number"
+                    min="1"
+                    value={palaceForm.capacity}
+                    onChange={handlePalaceField}
+                    placeholder="Enter guest capacity"
+                    required
+                  />
+                </label>
+
+                <label className="po-full-width">
+                  Palace Description
+                  <textarea
+                    name="description"
+                    rows="5"
+                    value={palaceForm.description}
+                    onChange={handlePalaceField}
+                    placeholder="Describe your palace, facilities and amenities..."
+                  />
+                </label>
+
+                <label className="po-full-width">
+                  Facilities
+                  <input
+                    value={palaceForm.facilities.join(", ")}
+                    onChange={(event) =>
+                      setPalaceForm((previous) => ({
+                        ...previous,
+                        facilities: event.target.value
+                          .split(",")
+                          .map((facility) => facility.trim())
+                          .filter(Boolean),
+                      }))
+                    }
+                    placeholder="Parking, Catering, AC, Rooms"
+                  />
+                  <small>Separate facilities with commas.</small>
+                </label>
+
+                <div className="po-full-width">
+                  <button type="submit" className="po-primary-button">
+                    Save Details
+                  </button>
+                  <p className="po-form-help">
+                    The current backend update route has not been connected
+                    in this component. This form currently updates the
+                    local preview only.
+                  </p>
+                </div>
               </form>
             </section>
           )}
 
-          {/* Photos */}
           {activeTab === "Photos" && (
-            <section className="rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold">Palace Gallery</h3>
-                  <p className="mt-2 text-sm text-[#99836D]">
-                    Select images to preview your gallery.
-                  </p>
+            <section className="po-panel">
+              <div className="po-section-heading po-section-heading-row">
+                <div>
+                  <h3>Palace Gallery</h3>
+                  <p>View existing photos and preview selected images.</p>
                 </div>
-                <label className="flex cursor-pointer items-center gap-2 rounded-xl bg-[#6E4931] px-4 py-3 text-sm font-semibold text-white">
-                  <FiPlus />
-                  Choose Photos
+
+                <label className="po-primary-button po-file-button">
+                  <FiPlus /> Choose Photos
                   <input
                     type="file"
                     accept="image/*"
                     multiple
-                    className="hidden"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      setNotice(
-                        `${files.length} photo(s) selected. Connect your image upload API to save them.`
-                      );
-                      setTimeout(() => setNotice(""), 3000);
-                    }}
+                    onChange={handlePhotoSelection}
                   />
                 </label>
               </div>
-              <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {[
-                  "photo-1519167758481-83f550bb49b3",
-                  "photo-1519741497674-611481863552",
-                  "photo-1464366400600-7168b8af9bc3",
-                ].map((photo) => (
-                  <img
-                    key={photo}
-                    src={`https://images.unsplash.com/${photo}?auto=format&fit=crop&w=700&q=80`}
-                    alt="Palace gallery"
-                    className="h-52 w-full rounded-xl object-cover"
-                  />
+
+              <div className="po-gallery-grid">
+                {palaceForm.Images.map((photo, index) => (
+                  <div className="po-gallery-item" key={`${photo}-${index}`}>
+                    <img src={photo} alt={`Palace ${index + 1}`} />
+                    <span>Saved palace photo</span>
+                  </div>
                 ))}
+
+                {selectedPhotos.map((photo, index) => (
+                  <div
+                    className="po-gallery-item"
+                    key={`${photo.name}-${index}`}
+                  >
+                    <img src={photo.url} alt={photo.name} />
+                    <span>{photo.name}</span>
+                  </div>
+                ))}
+
+                {palaceForm.Images.length === 0 &&
+                  selectedPhotos.length === 0 && (
+                    <div className="po-empty-state">
+                      <MdOutlinePhotoSizeSelectActual />
+                      <strong>No photos available</strong>
+                      <p>Select photos to preview them here.</p>
+                    </div>
+                  )}
+              </div>
+
+              <p className="po-form-help">
+                Selected photos are only previewed in this browser. A
+                backend image-upload endpoint is required to save them.
+              </p>
+            </section>
+          )}
+
+          {activeTab === "Bookings" && (
+            <BookingTable
+              bookings={filteredBookings}
+              money={money}
+              handleBooking={handleBooking}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {activeTab === "Availability" && (
+            <section className="po-panel po-form-panel">
+              <div className="po-section-heading">
+                <h3>Venue Availability</h3>
+                <p>Select a date to review availability.</p>
+              </div>
+
+              <div className="po-availability-box">
+                <label>
+                  Select date
+                  <input
+                    type="date"
+                    onChange={(event) => {
+                      if (event.target.value) {
+                        setNotice(
+                          `Selected date: ${event.target.value}. No availability changes have been saved.`
+                        );
+                      }
+                    }}
+                  />
+                </label>
+
+                <p>
+                  Availability is not yet connected to a backend endpoint.
+                  Selecting a date does not change customer-facing availability.
+                </p>
               </div>
             </section>
           )}
 
-          {/* Bookings */}
-          {activeTab === "Bookings" && (
-            <section className="rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-7">
-              <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div className="min-w-0">
-                  <h3 className="text-xl font-bold">Manage Bookings</h3>
-                  <p className="mt-2 text-sm text-[#99836D]">
-                    Accept or reject incoming venue booking requests.
-                  </p>
-                </div>
-                <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#E8DDCC] px-3 py-2">
-                  <FiSearch className="shrink-0" />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search bookings..."
-                    className="min-w-0 flex-1 bg-transparent text-sm outline-none"
-                  />
-                </div>
+          {activeTab === "Payments" && (
+            <section className="po-panel">
+              <div className="po-section-heading">
+                <h3>Payments & Earnings</h3>
+                <p>
+                  Summary calculated from the sample bookings currently
+                  displayed in this dashboard.
+                </p>
               </div>
-              <div className="space-y-3">
-                {filteredBookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="flex flex-col justify-between gap-4 rounded-xl border border-[#F0E6D8] p-4 md:flex-row md:items-center"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-bold ${booking.color}`}
-                      >
-                        {booking.initials}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-bold">{booking.name}</p>
-                        <p className="mt-1 text-sm text-[#99836D]">
-                          {booking.event} · {booking.guests} guests
-                        </p>
-                        <p className="mt-1 text-xs text-[#99836D]">
-                          {booking.id} · {booking.date}
-                        </p>
-                      </div>
+
+              <div className="po-earnings-card">
+                <span>Confirmed booking value</span>
+                <strong>{money(totalBookingValue)}</strong>
+                <small>This is not verified payment revenue.</small>
+              </div>
+
+              <div className="po-payment-list">
+                {confirmedBookings.map((booking) => (
+                  <div key={booking.id}>
+                    <div>
+                      <strong>{booking.name}</strong>
+                      <p>{booking.id} · {booking.date}</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="font-bold">{money(booking.amount)}</p>
-                      {booking.status === "Pending" ? (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleBooking(booking.id, "Confirmed")
-                            }
-                            className="rounded-lg bg-[#E4F1E2] px-4 py-2 text-sm font-semibold text-[#48784B]"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleBooking(booking.id, "Rejected")
-                            }
-                            className="rounded-lg bg-[#FBE5E0] px-4 py-2 text-sm font-semibold text-[#A94D3B]"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      ) : (
-                        <span className="rounded-full bg-[#F2E8D8] px-3 py-2 text-xs font-semibold">
-                          {booking.status}
-                        </span>
-                      )}
-                    </div>
+                    <strong>{money(booking.amount)}</strong>
                   </div>
                 ))}
 
-                {filteredBookings.length === 0 && (
-                  <p className="py-10 text-center text-sm text-[#A18B75]">
-                    No bookings found.
-                  </p>
+                {confirmedBookings.length === 0 && (
+                  <div className="po-empty-state">
+                    No confirmed bookings available.
+                  </div>
                 )}
               </div>
             </section>
           )}
 
-          {/* Availability */}
-          {activeTab === "Availability" && (
-            <section className="rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-8">
-              <h3 className="text-xl font-bold">Venue Availability</h3>
-              <p className="mb-6 mt-2 text-sm text-[#99836D]">
-                Select a date and manage whether your palace is available.
-              </p>
-              <div className="w-full max-w-lg rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] p-5">
-                <label className="block text-sm font-semibold">
-                  Select date
-                  <input
-                    type="date"
-                    className="mt-2 w-full rounded-lg border border-[#E8DDCC] bg-white p-3 font-normal"
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setNotice(`Selected availability date: ${e.target.value}`);
-                        setTimeout(() => setNotice(""), 2500);
-                      }
-                    }}
-                  />
-                </label>
-                <p className="mb-4 mt-5 text-sm text-[#99836D]">
-                  Availability changes need to be saved to your backend to
-                  affect customer bookings.
-                </p>
-                <button
-                  onClick={() => {
-                    setNotice("Connect the availability API to save this setting.");
-                    setTimeout(() => setNotice(""), 3000);
-                  }}
-                  className="rounded-xl bg-[#6E4931] px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Save Availability
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Payments */}
-          {activeTab === "Payments" && (
-            <section className="rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-8">
-              <h3 className="text-xl font-bold">Payments & Earnings</h3>
-              <p className="mt-2 text-sm text-[#99836D]">
-                Overview of booking amounts and payment statuses.
-              </p>
-              <div className="my-6 rounded-2xl bg-[#F4E7D4] p-6">
-                <p className="text-sm text-[#8B6B4A]">Total listed booking value</p>
-                <h4 className="mt-2 text-2xl font-bold sm:text-3xl">
-                  {money(
-                    bookings
-                      .filter((b) => b.status === "Confirmed")
-                      .reduce((sum, b) => sum + b.amount, 0)
-                  )}
-                </h4>
-              </div>
-              <div className="space-y-3">
-                {bookings
-                  .filter((b) => b.status === "Confirmed")
-                  .map((booking) => (
-                    <div
-                      key={booking.id}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#F0E6D8] p-4"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-semibold">{booking.name}</p>
-                        <p className="mt-1 text-xs text-[#99836D]">
-                          {booking.id} · {booking.date}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold">{money(booking.amount)}</p>
-                        <p className="mt-1 text-xs text-[#48784B]">
-                          Booking confirmed
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </section>
-          )}
-
-          {/* Settings */}
           {activeTab === "Settings" && (
-            <section className="mx-auto max-w-2xl rounded-2xl border border-[#EDE2D1] bg-white/80 p-5 sm:p-8">
-              <h3 className="text-xl font-bold">Account Settings</h3>
-              <p className="mb-6 mt-2 text-sm text-[#99836D]">
-                Manage your palace owner account information.
-              </p>
+            <section className="po-panel po-form-panel">
+              <div className="po-section-heading">
+                <h3>Account Settings</h3>
+                <p>Account information loaded from your login session.</p>
+              </div>
+
               <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setNotice("Settings submitted successfully.");
-                  setTimeout(() => setNotice(""), 2500);
+                className="po-form-grid"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setNotice(
+                    "Account settings are not connected to a backend update route yet."
+                  );
                 }}
-                className="space-y-5"
               >
-                <label className="block text-sm font-semibold">
-                  Owner / Business Name
+                <label className="po-full-width">
+                  Owner Name
                   <input
-                    defaultValue="Royal Palace"
-                    className="mt-2 w-full rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] px-4 py-3 font-normal outline-none focus:border-[#98714D]"
+                    defaultValue={owner.name || ""}
+                    placeholder="Enter owner name"
                   />
                 </label>
-                <label className="block text-sm font-semibold">
+
+                <label>
                   Contact Email
                   <input
                     type="email"
-                    placeholder="owner@example.com"
-                    className="mt-2 w-full rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] px-4 py-3 font-normal outline-none focus:border-[#98714D]"
+                    defaultValue={owner.email || ""}
+                    placeholder="Enter email"
                   />
                 </label>
-                <label className="block text-sm font-semibold">
+
+                <label>
                   Contact Number
                   <input
                     type="tel"
+                    defaultValue={owner.mobileno || ""}
                     placeholder="Enter contact number"
-                    className="mt-2 w-full rounded-xl border border-[#E8DDCC] bg-[#FFFCF7] px-4 py-3 font-normal outline-none focus:border-[#98714D]"
                   />
                 </label>
-                <button className="rounded-xl bg-[#6E4931] px-5 py-3 text-sm font-semibold text-white hover:bg-[#523622]">
-                  Save Settings
-                </button>
+
+                <div className="po-full-width">
+                  <button type="submit" className="po-primary-button">
+                    Save Settings
+                  </button>
+                </div>
               </form>
             </section>
           )}
 
-          <footer className="mt-8 flex flex-col justify-between gap-2 border-t border-[#E9DECD] pt-5 text-xs text-[#A18B75] sm:flex-row">
-            <p>© 2026 Wedora · Palace Partner Dashboard</p>
-            <p>Making every celebration memorable.</p>
+          <footer className="po-footer">
+            <span>© {new Date().getFullYear()} Wedora · Palace Partner</span>
+            <span>Making every celebration memorable.</span>
           </footer>
         </div>
       </main>
     </div>
   );
 };
+
+function BookingTable({
+  bookings,
+  money,
+  handleBooking,
+  setActiveTab,
+  compact = false,
+}) {
+  return (
+    <section className="po-panel po-bookings-panel">
+      <div className="po-panel-heading po-bookings-heading">
+        <div>
+          <h3>{compact ? "Recent Booking Requests" : "Manage Bookings"}</h3>
+          <p>
+            {compact
+              ? "A quick look at the latest sample booking requests."
+              : "Review and manage booking requests."}
+          </p>
+        </div>
+
+        {compact && (
+          <button
+            type="button"
+            className="po-outline-button"
+            onClick={() => setActiveTab("Bookings")}
+          >
+            View all <FiArrowUpRight />
+          </button>
+        )}
+      </div>
+
+      <div className="po-table-wrap">
+        <table className="po-bookings-table">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {bookings.map((booking) => (
+              <tr key={booking.id}>
+                <td>
+                  <div className="po-customer">
+                    <span className="po-customer-avatar">
+                      {getInitials(booking.name)}
+                    </span>
+                    <div>
+                      <strong>{booking.name}</strong>
+                      <small>{booking.id}</small>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <strong>{booking.event}</strong>
+                  <small className="po-table-subtext">
+                    <FiUsers /> {booking.guests} guests
+                  </small>
+                </td>
+
+                <td>{booking.date}</td>
+                <td className="po-table-amount">{money(booking.amount)}</td>
+
+                <td>
+                  <span
+                    className={`po-booking-status po-booking-${booking.status.toLowerCase()}`}
+                  >
+                    {booking.status}
+                  </span>
+                </td>
+
+                <td>
+                  {booking.status === "Pending" ? (
+                    <div className="po-booking-actions">
+                      <button
+                        type="button"
+                        className="po-accept-button"
+                        onClick={() =>
+                          handleBooking(booking.id, "Confirmed")
+                        }
+                        title="Accept booking"
+                      >
+                        <FiCheckCircle />
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        className="po-reject-button"
+                        onClick={() =>
+                          handleBooking(booking.id, "Rejected")
+                        }
+                        title="Reject booking"
+                      >
+                        <FiXCircle />
+                        Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="po-action-complete">
+                      {booking.status}
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+
+            {bookings.length === 0 && (
+              <tr>
+                <td colSpan="6" className="po-table-empty">
+                  No bookings found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="po-table-footer">
+        Showing {bookings.length} booking request(s).
+        Booking rows currently use sample data.
+      </div>
+    </section>
+  );
+}
+
+function FiCalendarIcon() {
+  return <SlCalender />;
+}
 
 export default PalaceOwners;
