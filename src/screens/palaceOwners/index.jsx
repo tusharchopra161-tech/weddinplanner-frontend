@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import {useLocation} from "react-router-dom"
 import {
   RiBankLine,
 } from "react-icons/ri";
@@ -28,6 +29,7 @@ import {
 import { io } from "socket.io-client";
 import { VenueCreation } from "../../components/VenueCreation";
 import  "./palaceOwner.css"
+import { useLocation } from "react-router-dom";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
@@ -103,6 +105,7 @@ const getInitials = (name = "") => {
 };
 
 export const PalaceOwners = () => {
+    const location = useLocation();
   const [activeTab, setActiveTab] = useState("Overview");
   const [bookings, setBookings] = useState(initialBookings);
   const [search, setSearch] = useState("");
@@ -197,7 +200,7 @@ export const PalaceOwners = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [location.key]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
