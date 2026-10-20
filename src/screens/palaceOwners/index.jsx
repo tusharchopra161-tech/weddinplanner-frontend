@@ -22,7 +22,7 @@ import {
 } from "react-icons/fi";
 import './palaceOwner.css'
 import { VenueCreation } from "../../components/VenueCreation";
-
+import { io } from "socket.io-client";
 const menuItems = [
   { name: "Overview", icon: MdOutlineDashboard },
   { name: "Palace Details", icon: RiBankLine },
@@ -103,7 +103,31 @@ export const PalaceOwners = () => {
       currency: "INR",
       maximumFractionDigits: 0,
     }).format(amount);
+  const getPalaceStatusInfo = (status) => {
+    switch (status?.toLowerCase()) {
+      case "approved":
+        return {
+          label: "Approved",
+          message: "Your palace has been approved and is visible to customers.",
+          className: "bg-green-100 text-green-800 border-green-200",
+        };
 
+      case "rejected":
+        return {
+          label: "Rejected",
+          message: "Your palace was rejected by the admin. Please contact the admin for details.",
+          className: "bg-red-100 text-red-800 border-red-200",
+        };
+
+      default:
+        return {
+          label: "Pending Approval",
+          message: "Your palace is waiting for root admin approval.",
+          className: "bg-amber-100 text-amber-800 border-amber-200",
+        };
+    }
+  };
+  const statusInfo = getPalaceStatusInfo(palaceStatus);
   useEffect(() => {
     const checkMyPalace = async () => {
       try {
@@ -166,6 +190,42 @@ export const PalaceOwners = () => {
     checkMyPalace();
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) return;
+
+    const socket = io(
+      "https://weddingplanner-backend.onrender.com",
+      {
+        auth: { token },
+        transports: ["websocket", "polling"],
+      }
+    );
+
+    socket.on("connect", () => {
+      console.log("Owner connected to palace updates");
+    });
+
+    socket.on("palace-status-updated", (data) => {
+      // Ignore updates for a different palace
+      if (data.palaceId !== palaceId) return;
+
+      // Update the status without refreshing the page
+      setPalaceStatus(data.status);
+
+      setNotice(data.message || `Your palace has been ${data.status}.`);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Owner Socket.IO error:", error.message);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [palaceId]);
+
   if (loadingPalace) {
     return (
       <div className="po-main min-h-screen flex items-center justify-center bg-[#FCF6E9] text-[#382D25]">
@@ -175,9 +235,9 @@ export const PalaceOwners = () => {
   }
 
   if (showCreateWizard) {
-    return <VenueCreation/>;
+    return <VenueCreation />;
   }
-  
+
   return (
     <div className="po-main min-h-screen w-full overflow-x-hidden bg-[#FCF6E9] text-[#382D25]">
       {/* Mobile overlay */}
@@ -340,6 +400,21 @@ export const PalaceOwners = () => {
           {notice && (
             <div className="mb-5 rounded-xl border border-[#D8C7AC] bg-[#F4E8D5] px-4 py-3 text-sm font-medium text-[#63462D]">
               {notice}
+            </div>
+
+          )}
+          {palaceId && (
+            <div
+              className={`mb-5 rounded-xl border px-4 py-4 ${statusInfo.className}`}
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-bold">
+                  Palace Status: {statusInfo.label}
+                </p>
+              </div>
+              <p className="mt-1 text-sm">
+                {statusInfo.message}
+              </p>
             </div>
           )}
 
