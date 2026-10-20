@@ -23,6 +23,7 @@ export const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
+    console.log(form)
     e.preventDefault();
     setMessage("");
 

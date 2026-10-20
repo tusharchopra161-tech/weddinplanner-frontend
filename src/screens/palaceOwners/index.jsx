@@ -21,6 +21,7 @@ import {
   FiEdit2,
 } from "react-icons/fi";
 import './palaceOwner.css'
+import { VenueCreation } from "../../components/VenueCreation";
 
 const menuItems = [
   { name: "Overview", icon: MdOutlineDashboard },
@@ -68,10 +69,11 @@ export const PalaceOwners = () => {
     facilities: "",
   };
   const [palaceForm, setPalaceForm] = useState(emptyPalace);
-const [palaceId, setPalaceId] = useState(null);
-const [palaceStatus, setPalaceStatus] = useState("");
-const [loadingPalace, setLoadingPalace] = useState(true);
-const [savingPalace, setSavingPalace] = useState(false);
+  const [palaceId, setPalaceId] = useState(null);
+  const [palaceStatus, setPalaceStatus] = useState("");
+  const [loadingPalace, setLoadingPalace] = useState(true);
+  const [savingPalace, setSavingPalace] = useState(false);
+  const [showCreateWizard, setShowCreateWizard] = useState(false);
 
   const handleBooking = (id, status) => {
     setBookings((previous) =>
@@ -102,6 +104,80 @@ const [savingPalace, setSavingPalace] = useState(false);
       maximumFractionDigits: 0,
     }).format(amount);
 
+  useEffect(() => {
+    const checkMyPalace = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          setNotice("Please log in again to continue.");
+          return;
+        }
+
+        const response = await fetch(
+          "https://weddingplanner-backend.onrender.com/palace/my",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to check your venue.");
+        }
+
+        const myPalaces = Array.isArray(data.palace)
+          ? data.palace
+          : [];
+
+        if (myPalaces.length === 0) {
+          setShowCreateWizard(true);
+        } else {
+          setShowCreateWizard(false);
+
+          const palace = myPalaces[0];
+
+          setPalaceId(palace._id);
+          setPalaceStatus(palace.status || "");
+          setPalaceForm({
+            name: palace.name || "",
+            location: palace.location || "",
+            price: palace.price ?? "",
+            capacity: palace.capacity ?? "",
+            description: palace.description || "",
+            Images: Array.isArray(palace.Images)
+              ? palace.Images
+              : [],
+            facilities: Array.isArray(palace.facilities)
+              ? palace.facilities
+              : [],
+          });
+        }
+      } catch (error) {
+        console.error("Check my palace error:", error);
+        setNotice(error.message || "Unable to load your venue.");
+      } finally {
+        setLoadingPalace(false);
+      }
+    };
+    checkMyPalace();
+  }, []);
+
+  if (loadingPalace) {
+    return (
+      <div className="po-main min-h-screen flex items-center justify-center bg-[#FCF6E9] text-[#382D25]">
+        <p>Checking your venue...</p>
+      </div>
+    );
+  }
+
+  if (showCreateWizard) {
+    return <VenueCreation/>;
+  }
+  
   return (
     <div className="po-main min-h-screen w-full overflow-x-hidden bg-[#FCF6E9] text-[#382D25]">
       {/* Mobile overlay */}
@@ -145,8 +221,8 @@ const [savingPalace, setSavingPalace] = useState(false);
                   setMobileMenu(false);
                 }}
                 className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${active
-                    ? "bg-[#6E4931] text-white shadow-md shadow-[#6E4931]/15"
-                    : "text-[#786555] hover:bg-[#EEE1CF] hover:text-[#493526]"
+                  ? "bg-[#6E4931] text-white shadow-md shadow-[#6E4931]/15"
+                  : "text-[#786555] hover:bg-[#EEE1CF] hover:text-[#493526]"
                   }`}
               >
                 <Icon className="shrink-0 text-xl" />
@@ -154,8 +230,8 @@ const [savingPalace, setSavingPalace] = useState(false);
                 {item.name === "Bookings" && (
                   <span
                     className={`ml-auto rounded-full px-2 py-0.5 text-xs ${active
-                        ? "bg-white/20 text-white"
-                        : "bg-[#EAD5B8] text-[#785330]"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#EAD5B8] text-[#785330]"
                       }`}
                   >
                     {bookings.filter((b) => b.status === "Pending").length}
@@ -514,10 +590,10 @@ const [savingPalace, setSavingPalace] = useState(false);
                           <td className="px-4 py-4">
                             <span
                               className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold ${booking.status === "Confirmed"
-                                  ? "bg-[#E4F1E2] text-[#48784B]"
-                                  : booking.status === "Rejected"
-                                    ? "bg-[#FBE5E0] text-[#A94D3B]"
-                                    : "bg-[#FFF0D6] text-[#A36D25]"
+                                ? "bg-[#E4F1E2] text-[#48784B]"
+                                : booking.status === "Rejected"
+                                  ? "bg-[#FBE5E0] text-[#A94D3B]"
+                                  : "bg-[#FFF0D6] text-[#A36D25]"
                                 }`}
                             >
                               {booking.status}
