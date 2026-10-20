@@ -132,7 +132,7 @@ export const VenueCreation = () => {
         );
       }
 
-      alert("Venue submitted successfully for admin approval!");
+      alert("Venue submitted successfully for Tushar approval!");
 
       // Navigate to the Palace Owner Dashboard.
       navigate("/owner-dashboard", {
