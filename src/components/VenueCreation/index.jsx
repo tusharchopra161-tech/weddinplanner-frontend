@@ -5,6 +5,7 @@ import './venuecreation.css'
 import { PhotoShowcase } from './photoShowcase';
 import { VenueAmenities } from './venueAmenities';
 import { ReviewPublish } from './reviewPublish';
+import { useNavigate } from "react-router-dom";
 const steps = [
   "Venue Details",
   "Photo Showcase",
@@ -23,7 +24,7 @@ const initialForm = {
 };
 
 export const VenueCreation = () => {
-
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [venueForm, setVenueForm] = useState(initialForm);
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -76,59 +77,77 @@ export const VenueCreation = () => {
     markStepCompleted(currentStep);
     setCurrentStep((previous) => Math.min(previous + 1, 3));
   };
+
   const handlePublish = async () => {
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      alert("Please log in again as a venue owner.");
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("name", venueForm.name.trim());
-    formData.append("location", venueForm.location.trim());
-    formData.append("description", venueForm.description.trim());
-    formData.append("price", venueForm.price);
-    formData.append("capacity", venueForm.capacity);
-    formData.append(
-      "facilities",
-      JSON.stringify(venueForm.facilities)
-    );
-    formData.append("isAvailable", "true");
-
-    venueForm.Images.forEach((image) => {
-      if (image.file) {
-        formData.append("Images", image.file);
+      if (!token) {
+        alert("Please log in again as a venue owner.");
+        return;
       }
-    });
 
-    const response = await fetch(
-      "https://weddingplanner-backend.onrender.com/palace",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const formData = new FormData();
+
+      formData.append("name", venueForm.name.trim());
+      formData.append("location", venueForm.location.trim());
+      formData.append("description", venueForm.description.trim());
+      formData.append("price", venueForm.price);
+      formData.append("capacity", venueForm.capacity);
+      formData.append(
+        "facilities",
+        JSON.stringify(venueForm.facilities)
+      );
+      formData.append("isAvailable", "true");
+
+      venueForm.Images.forEach((image) => {
+        if (image.file) {
+          formData.append("Images", image.file);
+        }
+      });
+
+      const response = await fetch(
+        "https://weddingplanner-backend.onrender.com/palace",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to publish venue.");
+      }
+
+      // Confirm that the backend returned the created palace.
+      const createdPalace = data.palace;
+
+      if (!createdPalace?._id) {
+        throw new Error(
+          "The palace may have been saved, but the server did not return its ID. Check the backend response."
+        );
+      }
+
+      alert("Venue submitted successfully for admin approval!");
+
+      // Navigate to the Palace Owner Dashboard.
+      navigate("/owner-dashboard", {
+        replace: true,
+        state: {
+          refreshPalace: true,
+          palaceId: createdPalace._id,
         },
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to publish venue.");
+      });
+    } catch (error) {
+      console.error("Publish venue error:", error);
+      alert(error.message || "Something went wrong.");
     }
+  };
 
-    alert("Venue submitted successfully for admin approval!");
-
-    console.log("Created palace:", data.palace);
-  } catch (error) {
-    console.error("Publish venue error:", error);
-    alert(error.message || "Something went wrong.");
-  }
-};
   return (
     <div className="venue-workspace">
       <aside className="venue-sidebar">

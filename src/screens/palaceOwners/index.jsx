@@ -81,7 +81,6 @@ export const PalaceOwners = () => {
         booking.id === id ? { ...booking, status } : booking
       )
     );
-
     setNotice(
       status === "Confirmed"
         ? "Booking accepted successfully."
@@ -96,7 +95,6 @@ export const PalaceOwners = () => {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
-
   const money = (amount) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -226,6 +224,7 @@ export const PalaceOwners = () => {
     };
   }, [palaceId]);
 
+
   if (loadingPalace) {
     return (
       <div className="po-main min-h-screen flex items-center justify-center bg-[#FCF6E9] text-[#382D25]">
@@ -233,7 +232,6 @@ export const PalaceOwners = () => {
       </div>
     );
   }
-
   if (showCreateWizard) {
     return <VenueCreation />;
   }
