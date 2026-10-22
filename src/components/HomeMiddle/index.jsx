@@ -1,70 +1,74 @@
-import React, { useEffect } from 'react'
+
+import React, { useRef } from 'react'
 import "./HomeMiddle.css"
 import gsap from "gsap"
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useGSAP } from '@gsap/react'
-import { Cards } from '../Cards'
-import { useRef } from 'react'
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { useGSAP } from "@gsap/react"
+import { FaHeart } from "react-icons/fa"
+import { Cards } from "../Cards"
 
 gsap.registerPlugin(ScrollTrigger)
-export const HomeMiddle = () => {
-  const palacesImg=["https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg",
-    "https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg",
-    "https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg"
-  ];
-  console.log("GSAP:", gsap);
-console.log("Cards:", gsap.utils.toArray(".card2"));
-const tl=gsap.timeline()
 
-const scrollRef=useRef()
-//========= simple gsap on cards===========
-  // useGSAP(()=>{
-  //     tl.from(".card",{
-  //       y:300,
-  //       opacity:0,
-  //       delay:2,
-  //       duration:2,
-  //       stagger:{
-  //         amount:1,
-  //         grid:[2,1],
-  //         ease:'bounce'
-  //         // from:"center"
-  //       },
-  //       // repeat:-1,
-  //       // yoyo:true,
-  //       rotate:-360
-  //     })
-  //   },[])
-//=========scroll gsap=====================
-useGSAP(()=>{
-  const cs=gsap.utils.toArray(scrollRef.current.children)
-  cs.forEach((c)=>{
-    gsap.from(c,{
-      y:300,
-      rotation:10,
-      // borderRadius:"100%",
-      scale:-0.5,
-      stagger:1,
-      duration:1,
-      scrollTrigger:{
-        trigger:c,
-        start:'bottom, bottom',
-        end:'top 80%',
-        // scrub:true,
-        // markers:true,
-      }
-    })
-  })
-})
-  return (
-    <div ref={scrollRef} className='middle p-2 min-h-[100vh] flex flex-wrap items-center gap-3 '>
-      
-      {
-        palacesImg.map((link,idx)=>{
-          return <Cards className="card" id={idx} link={link}/>
+export const HomeMiddle = () => {
+    const scrollRef = useRef(null)
+
+    const palacesImg = [
+        "https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg",
+        "https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg",
+        "https://i.pinimg.com/originals/65/6c/3b/656c3b1ef03a33eedf8c1e7d6fd24724.jpg"
+    ]
+
+    useGSAP(() => {
+        const cards = gsap.utils.toArray(".home-middle-card")
+
+        cards.forEach((card) => {
+            gsap.from(card, {
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 90%",
+                    toggleActions: "play none none reverse"
+                }
+            })
         })
-      }
-      
-    </div>
-  )
+    }, { scope: scrollRef })
+
+    return (
+        <section className="home-middle-section">
+            <div className="middle-heading">
+                <span className="middle-eyebrow">
+                    <FaHeart /> MADE FOR YOUR SPECIAL DAY
+                </span>
+
+                <h2>
+                    Discover Your <span>Dream Venue</span>
+                </h2>
+
+                <p>
+                    From grand wedding palaces to beautiful celebration spaces,
+                    find the perfect setting for your forever memories.
+                </p>
+            </div>
+
+            <div ref={scrollRef} className="middle">
+                {palacesImg.map((link, idx) => (
+                    <div className="home-middle-card" key={idx}>
+                        <Cards
+                            className="card"
+                            id={idx}
+                            link={link}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            <div className="middle-bottom-text">
+                <span>♡</span>
+                Your perfect wedding venue is waiting for you.
+            </div>
+        </section>
+    )
 }

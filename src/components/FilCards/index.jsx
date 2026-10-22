@@ -14,7 +14,7 @@ export const FilCards = ({
 
             {/* Image */}
             <div className="filter-card-img">
-                {/* <img src={image} alt={name} /> */}
+                <img src={image} alt={name || 'Palace venue'} />
 
                 <div className="filter-heart">
                     <FaRegHeart />

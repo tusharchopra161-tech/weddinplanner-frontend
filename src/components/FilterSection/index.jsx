@@ -29,6 +29,7 @@ export const FilterSection = () => {
                 }
 
                 setPalaces(data.palace || data.palaces || []);
+                
             } catch (err) {
                 console.error('Fetch palaces error:', err);
                 setError(err.message || 'Unable to load palaces');
@@ -38,6 +39,7 @@ export const FilterSection = () => {
         };
 
         fetchPalaces();
+        
     }, []);
    
     // Filter and sort palaces
@@ -74,21 +76,17 @@ export const FilterSection = () => {
         });
          useEffect(() => {
         const interval = setInterval(() => {
-            setVisibleCount((prev) => {
-                return prev < filteredPalaces.length
-                    ? prev + 1
-                    : prev;
-            });
+            setVisibleCount(filteredPalaces.length);
         }, 5000);
 
         return () => clearInterval(interval);
     }, [filteredPalaces.length]);
 
     return (
-        <div className="fil-main w-full flex gap-5">
+        <div className="fil-main ">
 
             {/* LEFT FILTER */}
-            <div className="fil-result w-[20%] min-h-[45vh] rounded-2xl border-2 border-[#DFC9DC] bg-[#FFFDF8] flex flex-col gap-4">
+            <div className="fil-result ">
 
                 <div className="flex justify-between items-center">
                     <h3 className="text-[#692065] text-lg font-semibold">
@@ -172,11 +170,11 @@ export const FilterSection = () => {
             </div>
 
             {/* PALACE RESULTS */}
-            <div className="w-[75%] flex flex-col gap-3">
+            <div className="palace-results">
 
-                <div className="flex justify-between items-start mb-5">
+                <div className="palace-results-header">
                     <div>
-                        <h2 className="text-[#692065] text-[2rem] font-semibold">
+                        <h2 className="palace-results-header">
                             Palaces for your love story
                         </h2>
 
@@ -217,7 +215,7 @@ export const FilterSection = () => {
                 )}
 
                 {!loading && !error && (
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="palace-cards-grid">
                         {filteredPalaces.slice(0, visibleCount).map((palace) => (
                             <FilCards
                                 key={palace._id}
@@ -236,6 +234,7 @@ export const FilterSection = () => {
                 )}
 
             </div>
+        
         </div>
     );
 };

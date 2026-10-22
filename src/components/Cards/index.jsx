@@ -1,83 +1,74 @@
-import React from 'react'
-import { FaHeart, FaStar } from "react-icons/fa";
-import { FaRegHeart } from "react-icons/fa";
-import gsap from "gsap"
-import {useGSAP} from "@gsap/react"
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useEffect } from 'react';
+import { useState } from 'react'
+import {
+    FaHeart,
+    FaStar,
+    FaRegHeart,
+    FaMapMarkerAlt,
+    FaArrowRight
+} from 'react-icons/fa'
+import './card.css'
+
 export const Cards = (prop) => {
-    // useEffect(()=>{
-    // gsap.utils.toArray('.card').forEach(card=>{
-    //   gsap.fromto('.card',
-    //     {
-    //     x: 300,
-    //     opacity: 0,
-    //     },{
-    //     x: 0,
-    //     opacity: 1,
-    //     duration: 1,
-    //     scrollTrigger: {
-    //       trigger: card,
-    //       start: "top 85%",
-    //       end: "top 50%",
-    //       scrub: true,
-    //       markers:true,
-    //     },
-    //   })
-      // console.log(card)
-    // }
-// )
-//   },[])
+    const [isFavorite, setIsFavorite] = useState(false)
 
-// useEffect(() => {
-//     const cards = gsap.utils.toArray(".card");
+    return (
+        <article className="venue-card">
+            <div className="venue-card-image">
+                <img
+                    src={prop.link}
+                    alt={prop.name || "Wedding palace"}
+                    loading="lazy"
+                />
 
-//     cards.forEach((card) => {
-//       gsap.fromTo(
-//         card,
-//         {
-//           y: 300,
-//         //   stagger:2,
-//           opacity: 0,
-//         },
-//         {
-//           y: 0,
-//           opacity: 1,
-//           duration: 3,
-//           scrollTrigger: {
-              
-//             trigger: card,
-//             start: "top 90%",
-//             end: "top 50%",
-//             // scrub: true,
-//             markers: true,
-//           },
-//         }
-//       );
-//     });
+                <span className="venue-badge">Popular Venue</span>
 
-//     return () => {
-//       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-//     };
-//   }, []);
-  
-  return (
-    
-      <div className="card relative ms-1 overflow-hidden  bg-white w-[32.5%]  flex flex-col gap-5 rounded-3xl">
-            <span className='absolute top-[12px] right-[1rem] z-[99] w-10 h-10 rounded-[50%] flex justify-center items-center bg-[#FFD4D2]'><FaRegHeart/></span>
-            <img src={prop.link}></img>
-            <div className="flex justify-between  ">
-                <div style={{"padding-left":"20px"}}>
-                    <h1 className='text-[#692065] text-3xl'>The Rosewood Palace</h1>
-                    <p>Lake Como, Italy</p>
-                </div> 
-                <div style={{"padding-right":"20px"}} className="flex text-amber-400 text-2xl font-semibold">
-                    <FaStar style={{"margin-top":"4.5px"}}/>4.2
+                <button
+                    type="button"
+                    className={`venue-favorite ${isFavorite ? 'active' : ''}`}
+                    onClick={() => setIsFavorite(!isFavorite)}
+                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    aria-pressed={isFavorite}
+                >
+                    {isFavorite ? <FaHeart /> : <FaRegHeart />}
+                </button>
+            </div>
+
+            <div className="venue-card-content">
+                <div className="venue-card-top">
+                    <div className="venue-card-info">
+                        <h3>{prop.name || "The Rosewood Palace"}</h3>
+
+                        <p className="venue-location">
+                            <FaMapMarkerAlt />
+                            {prop.location || "Lake Como, Italy"}
+                        </p>
+                    </div>
+
+                    <div className="venue-rating">
+                        <FaStar />
+                        <span>{prop.rating || "4.2"}</span>
+                    </div>
+                </div>
+
+                <div className="venue-card-footer">
+                    <p className="venue-price">
+                        From <strong>{prop.price || "₹8,500"}</strong>
+                    </p>
+
+                    <button
+                        type="button"
+                        className="venue-view-btn"
+                        onClick={() => {
+                            if (prop.onView) {
+                                prop.onView(prop.id)
+                            }
+                        }}
+                        aria-label={`View ${prop.name || "venue"} details`}
+                    >
+                        <FaArrowRight />
+                    </button>
                 </div>
             </div>
-            <p style={{"padding-left":"20px","padding-bottom":"6px"}}>From <span className="text-[#692065] font-semibold">₹8,500</span></p>
-        </div>
-    
-            
-  )
+        </article>
+    )
 }

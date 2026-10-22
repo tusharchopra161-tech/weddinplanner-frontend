@@ -1,4 +1,171 @@
-.middle{
-    position:relative;
-    padding:5%;
+
+
+
+.home-middle-section {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4rem 6% 3rem;
+    background-color: #FCF6E9;
+}
+
+/* SECTION HEADING */
+
+.middle-heading {
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+    text-align: center;
+}
+
+.middle-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    color: #C28D2E;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+}
+
+.middle-heading h2 {
+    margin: 0;
+    color: #692065;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.middle-heading h2 span {
+    color: #C28D2E;
+}
+
+.middle-heading p {
+    max-width: 600px;
+    margin: 0.8rem auto 0;
+    color: #654E63;
+    font-size: 0.95rem;
+    line-height: 1.7;
+}
+
+/* VENUE CARDS LAYOUT */
+
+.middle {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.home-middle-card {
+    min-width: 0;
+    width: 100%;
+}
+
+/* BOTTOM MESSAGE */
+
+.middle-bottom-text {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    color: #654E63;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.middle-bottom-text span {
+    color: #C28D2E;
+    font-size: 1.4rem;
+}
+
+/* LAPTOP */
+
+@media (max-width: 1000px) {
+    .home-middle-section {
+        padding: 3.5rem 4% 2.5rem;
+    }
+
+    .middle {
+        gap: 1rem;
+    }
+
+    .middle-heading h2 {
+        font-size: 1.9rem;
+    }
+}
+
+/* TABLET */
+
+@media (max-width: 750px) {
+    .home-middle-section {
+        padding: 3rem 5% 2rem;
+    }
+
+    .middle {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.2rem;
+    }
+
+    .middle-heading {
+        margin-bottom: 2rem;
+    }
+
+    .middle-heading h2 {
+        font-size: 1.7rem;
+    }
+
+    .middle-heading p {
+        font-size: 0.9rem;
+    }
+
+    .middle-bottom-text {
+        margin-top: 1.5rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+    .home-middle-section {
+        padding: 2.5rem 5% 2rem;
+    }
+
+    .middle {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .middle-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .middle-eyebrow {
+        font-size: 0.65rem;
+        letter-spacing: 1.2px;
+    }
+
+    .middle-heading h2 {
+        font-size: 1.5rem;
+    }
+
+    .middle-heading p {
+        margin-top: 0.6rem;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    .middle-bottom-text {
+        align-items: flex-start;
+        font-size: 0.8rem;
+    }
 }
