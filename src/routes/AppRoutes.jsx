@@ -8,6 +8,7 @@ import { Palaces } from '../screens/Palaces'
 import { PalaceOwners } from '../screens/palaceOwners'
 import AdminDashboard from '../components/AdminDashboard'
 import ProtectedRoute from './ProtectedRoute'
+import { PalaceDetails } from '../screens/PalaceDetails'
 export const AppRoutes = () => {
   return (
     
@@ -16,6 +17,7 @@ export const AppRoutes = () => {
         <Route path="/login" element={<Signin/>}></Route>
         <Route path="/palaces" element={<Palaces/>}></Route>
         <Route path="/" element={<Home/>}></Route>
+        <Route path="/palace/:palaceId" element={<PalaceDetails/>}></Route>
         <Route path="/owner-dashboard" element={<PalaceOwners/>}></Route>
         <Route path="/admin-dashboard"element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>}/>
     </Routes>

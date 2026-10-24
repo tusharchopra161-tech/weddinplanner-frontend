@@ -1,53 +1,83 @@
-import './filcards.css'
-    import React from 'react'
-import { FaRegHeart, FaStar } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import './filcards.css';
+import { FaRegHeart, FaHeart, FaStar } from 'react-icons/fa';
 
 export const FilCards = ({
+    palaceId,
     image,
     name,
     location,
     price,
     rating
 }) => {
+    const [isFavorite, setIsFavorite] = useState(false);
+    const navigate = useNavigate();
+    const handleFavorite = () => {
+        setIsFavorite((previous) => !previous);
+    };
+    const handleViewPalace = () => {
+        if (!palaceId) {
+            alert('Palace details are unavailable. Please try again.');
+            return;
+        }
+
+        navigate(`/palace/${palaceId}`);
+    };
     return (
         <div className="filter-card">
 
-            {/* Image */}
+            {/* Palace Image */}
             <div className="filter-card-img">
-                <img src={image} alt={name || 'Palace venue'} />
+                <img
+                    src={image}
+                    alt={name || 'Palace venue'}
+                    loading="lazy"
+                />
 
-                <div className="filter-heart">
-                    <FaRegHeart />
-                </div>
+                <button
+                    type="button"
+                    className={`filter-heart ${isFavorite ? 'active' : ''}`}
+                    onClick={handleFavorite}
+                    aria-label={
+                        isFavorite
+                            ? `Remove ${name} from favorites`
+                            : `Add ${name} to favorites`
+                    }
+                    aria-pressed={isFavorite}
+                >
+                    {isFavorite ? <FaHeart /> : <FaRegHeart />}
+                </button>
             </div>
 
-            {/* Details */}
+            {/* Palace Details */}
             <div className="filter-card-content">
 
                 <div className="filter-card-info">
-
-                    <div>
+                    <div className="filter-card-title">
                         <h3>{name}</h3>
                         <p>{location}</p>
                     </div>
 
                     <div className="filter-rating">
                         <FaStar />
-                        <span>{rating}</span>
+                        <span>{rating || 'New'}</span>
                     </div>
-
                 </div>
 
                 <p className="filter-price">
                     From <span>₹{price}</span>
                 </p>
 
-                <button className="view-palace">
+                <button
+                    type="button"
+                    className="view-palace"
+                    onClick={handleViewPalace}
+                >
                     View Palace
                 </button>
 
             </div>
-
         </div>
-    )
-}
+    );
+};

@@ -1,50 +1,115 @@
+
+/* ========================================
+   PALACE CARD
+======================================== */
+
 .filter-card {
     width: 100%;
-    background-color: #fffdf8;
-    border: 1px solid #dfc9dc;
+    min-width: 0;
+    box-sizing: border-box;
+    background-color: #FFFDF8;
+    border: 1px solid #DFC9DC;
     border-radius: 15px;
     overflow: hidden;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
+.filter-card:hover {
+    box-shadow: 0 6px 18px rgba(105, 32, 101, 0.10);
+    transform: scale(1.02);
+}
+
+/* ========================================
+   PALACE IMAGE
+======================================== */
+
 .filter-card-img {
-    height: 145px;
+    width: 100%;
+    height: 165px;
     position: relative;
     overflow: hidden;
+    background-color: #FCF6E9;
 }
 
 .filter-card-img img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.35s ease;
 }
+
+.filter-card:hover .filter-card-img img {
+    transform: scale(1.04);
+}
+
+/* ========================================
+   FAVORITE HEART BUTTON
+======================================== */
 
 .filter-heart {
     position: absolute;
     top: 10px;
     right: 10px;
+    z-index: 2;
 
-    width: 30px;
-    height: 30px;
-
-    border-radius: 50%;
-    background-color: white;
+    width: 36px;
+    height: 36px;
+    padding: 0;
 
     display: flex;
     justify-content: center;
     align-items: center;
 
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 50%;
+
+    background-color: rgba(255, 212, 210, 0.95);
     color: #692065;
-    font-size: 14px;
+
+    font-size: 16px;
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
+.filter-heart:hover {
+    transform: scale(1.08);
+}
+
+.filter-heart.active {
+    background-color: #692065;
+    color: #FFFFFF;
+}
+
+.filter-heart:focus-visible,
+.view-palace:focus-visible {
+    outline: 2px solid #692065;
+    outline-offset: 3px;
+}
+
+/* ========================================
+   CARD CONTENT
+======================================== */
+
 .filter-card-content {
-    padding: 10px;
+    padding: 12px;
+    box-sizing: border-box;
 }
 
 .filter-card-info {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    gap: 8px;
+}
+
+.filter-card-title {
+    flex: 1;
+    min-width: 0;
 }
 
 .filter-card-info h3 {
@@ -52,49 +117,219 @@
     color: #692065;
     font-size: 14px;
     font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .filter-card-info p {
-    margin: 3px 0 0;
-    color: #654e63;
-    font-size: 10px;
+    margin: 4px 0 0;
+    color: #654E63;
+    font-size: 11px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
 
 .filter-rating {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 3px;
-
-    color: #c28d2e;
-    font-size: 10px;
+    gap: 4px;
+    color: #C28D2E;
+    font-size: 11px;
+    white-space: nowrap;
 }
 
+/* ========================================
+   PRICE
+======================================== */
+
 .filter-price {
-    margin: 6px 0;
-    color: #654e63;
-    font-size: 10px;
+    margin: 12px 0;
+    color: #654E63;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
 .filter-price span {
     color: #692065;
+    font-size: 14px;
     font-weight: 600;
+    overflow-wrap: anywhere;
 }
 
-.view-palace {
-    width: 100%;
-    height: 26px;
+/* ========================================
+   VIEW PALACE BUTTON
+======================================== */
 
-    border: 1px solid #dfc9dc;
+.view-palace {
+    display: block;
+    width: 100%;
+    min-height: 36px;
+    padding: 7px 10px;
+    box-sizing: border-box;
+
+    border: 1px solid #DFC9DC;
     border-radius: 8px;
 
-    background-color: #fcf6e9;
+    background-color: #FCF6E9;
     color: #692065;
 
-    font-size: 9px;
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
+
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease;
 }
 
 .view-palace:hover {
     background-color: #692065;
-    color: white;
+    border-color: #692065;
+    color: #FFFFFF;
+}
+
+/* ========================================
+   LAPTOP
+======================================== */
+
+@media (min-width: 1201px) {
+    .filter-card-img {
+        height: 175px;
+    }
+
+    .filter-card-content {
+        padding: 14px;
+    }
+}
+
+/* ========================================
+   TABLET AND SMALL LAPTOP
+======================================== */
+
+@media (max-width: 900px) {
+    .filter-card-img {
+        height: 150px;
+    }
+
+    .filter-card-content {
+        padding: 10px;
+    }
+
+    .filter-card-info h3 {
+        font-size: 13px;
+    }
+
+    .filter-price span {
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 700px) {
+    .filter-card {
+        border-radius: 13px;
+    }
+
+    .filter-card-img {
+        height: 160px;
+    }
+
+    .filter-card-content {
+        padding: 12px;
+    }
+
+    .filter-card-info h3 {
+        font-size: 14px;
+    }
+
+    .filter-card-info p {
+        font-size: 11px;
+    }
+
+    .filter-heart {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .view-palace {
+        min-height: 40px;
+        font-size: 13px;
+    }
+}
+
+/* ========================================
+   SMALL MOBILE
+======================================== */
+
+@media (max-width: 480px) {
+    .filter-card-img {
+        height: 210px;
+    }
+
+    .filter-card-content {
+        padding: 14px;
+    }
+
+    .filter-card-info h3 {
+        font-size: 15px;
+    }
+
+    .filter-card-info p {
+        font-size: 12px;
+    }
+
+    .filter-rating {
+        font-size: 12px;
+    }
+
+    .filter-price {
+        margin: 12px 0;
+        font-size: 12px;
+    }
+
+    .filter-price span {
+        font-size: 15px;
+    }
+}
+
+/* ========================================
+   VERY NARROW MOBILE
+======================================== */
+
+@media (max-width: 350px) {
+    .filter-card-img {
+        height: 175px;
+    }
+
+    .filter-card-content {
+        padding: 11px;
+    }
+
+    .filter-card-info {
+        gap: 5px;
+    }
+
+    .filter-card-info h3 {
+        font-size: 13px;
+    }
+
+    .filter-rating {
+        font-size: 10px;
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .filter-card,
+    .filter-card-img img,
+    .filter-heart,
+    .view-palace {
+        transition: none;
+    }
 }

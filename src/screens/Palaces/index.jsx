@@ -27,7 +27,6 @@ export const Palaces = () => {
 
       {/* Palace Filters and Results */}
       <FilterSection />
-
     </main>
   )
 }

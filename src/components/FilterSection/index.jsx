@@ -6,7 +6,6 @@ export const FilterSection = () => {
     const [palaces, setPalaces] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [visibleCount, setVisibleCount] = useState(2);
     const [destination, setDestination] = useState('Any destination');
     const [guests, setGuests] = useState(200);
     const [budget, setBudget] = useState(500000);
@@ -173,8 +172,8 @@ export const FilterSection = () => {
             <div className="palace-results">
 
                 <div className="palace-results-header">
-                    <div>
-                        <h2 className="palace-results-header">
+                    <div className="palace-results-header">
+                        <h2 className="palace-results-title">
                             Palaces for your love story
                         </h2>
 
@@ -188,7 +187,8 @@ export const FilterSection = () => {
                     <select
                         value={sort}
                         onChange={(e) => setSort(e.target.value)}
-                        className="w-[140px] h-10 rounded-lg border border-[#DFC9DC] bg-white px-2 text-sm text-[#654E63] outline-none"
+                        className="sort-select"
+                        aria-label="Sort palaces"
                     >
                         <option>Recommended</option>
                         <option>Low to high</option>
@@ -213,12 +213,12 @@ export const FilterSection = () => {
                         No palaces found. Try changing your filters.
                     </p>
                 )}
-
                 {!loading && !error && (
                     <div className="palace-cards-grid">
-                        {filteredPalaces.slice(0, visibleCount).map((palace) => (
+                        {filteredPalaces.map((palace) => (
                             <FilCards
                                 key={palace._id}
+                                palaceId={palace._id}
                                 image={
                                     palace.Images?.[0] ||
                                     palace.images?.[0] ||
@@ -227,14 +227,13 @@ export const FilterSection = () => {
                                 name={palace.name}
                                 location={palace.location}
                                 price={Number(palace.price).toLocaleString('en-IN')}
-                                rating={palace.rating || 'New'}
+                                rating={palace.rating}
                             />
                         ))}
                     </div>
                 )}
 
             </div>
-        
         </div>
     );
 };
