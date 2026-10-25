@@ -130,7 +130,14 @@ export const Nav = () => {
             >
               Find a Palace
             </button>
-
+            <button
+             className="nav-btn"
+             onClick={() => {
+              navigate('/my-bookings')
+              closeMenu()
+            }}>
+              My Bookings
+            </button>
             <button
               className="nav-btn"
               onClick={closeMenu}
@@ -207,7 +214,7 @@ export const Nav = () => {
                 Get Started
               </button>
 
-              {isMenuOpen?<></>:<div
+              {isMenuOpen ? <></> : <div
                 onClick={() => {
                   clicklog()
                   closeMenu()

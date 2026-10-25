@@ -146,8 +146,15 @@ export const PalaceDetails = () => {
             return;
         }
 
-        if (!Number.isInteger(guests) || guests < 1) {
-            setError('Please enter a valid guest count.');
+        if (!Number.isInteger(guests) || guests < 100) {
+            setError('The minimum guest count must be 100.');
+            return;
+        }
+
+        if (Number(palace.capacity) > 0 && guests > Number(palace.capacity)) {
+            setError(
+                `This venue can accommodate up to ${palace.capacity} guests.`
+            );
             return;
         }
 
@@ -188,6 +195,7 @@ export const PalaceDetails = () => {
                 guestCount: '',
                 specialRequests: ''
             });
+            navigate("/my-bookings")
         } catch (err) {
             setError(err.message || 'Unable to submit your request.');
         } finally {
@@ -516,7 +524,7 @@ export const PalaceDetails = () => {
                                         id="pd-guests"
                                         type="number"
                                         name="guestCount"
-                                        min="1"
+                                        min={100}
                                         max={palace.capacity || undefined}
                                         placeholder="e.g. 150 guests"
                                         value={form.guestCount}

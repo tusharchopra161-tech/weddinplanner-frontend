@@ -27,8 +27,9 @@ import {
 } from "react-icons/fi";
 import { io } from "socket.io-client";
 import { VenueCreation } from "../../components/VenueCreation";
-import  "./palaceOwner.css"
+import "./palaceOwner.css"
 import { useLocation } from "react-router-dom";
+import { AvailabilityDates } from "../../components/AvailabilityDates";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
@@ -44,44 +45,7 @@ const menuItems = [
 
 // Sample bookings for the dashboard UI.
 // Replace with your real booking API when it is connected.
-const initialBookings = [
-  {
-    id: "BK-1024",
-    name: "Aarav Sharma",
-    event: "Wedding Ceremony",
-    date: "18 Oct 2026",
-    guests: 500,
-    amount: 125000,
-    status: "Pending",
-  },
-  {
-    id: "BK-1023",
-    name: "Priya Mehta",
-    event: "Engagement",
-    date: "22 Oct 2026",
-    guests: 250,
-    amount: 75000,
-    status: "Confirmed",
-  },
-  {
-    id: "BK-1022",
-    name: "Rohan Kapoor",
-    event: "Reception",
-    date: "25 Oct 2026",
-    guests: 800,
-    amount: 180000,
-    status: "Pending",
-  },
-  {
-    id: "BK-1021",
-    name: "Ananya Verma",
-    event: "Wedding Ceremony",
-    date: "02 Nov 2026",
-    guests: 400,
-    amount: 110000,
-    status: "Confirmed",
-  },
-];
+
 
 const emptyPalace = {
   name: "",
@@ -102,12 +66,19 @@ const getInitials = (name = "") => {
     .map((part) => part[0].toUpperCase())
     .join("") || "PO";
 };
+const getDateKey = (value) => {
+  const date = new Date(value);
 
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toISOString().slice(0, 10);
+};
 export const PalaceOwners = () => {
-    const location = useLocation();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("Overview");
-  const [bookings, setBookings] = useState(initialBookings);
-  const [search, setSearch] = useState("");
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [bookingActionId, setBookingActionId] = useState(null); const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [notice, setNotice] = useState("");
   const [owner] = useState(() => {
@@ -119,7 +90,9 @@ export const PalaceOwners = () => {
   });
   const [palaceForm, setPalaceForm] = useState(emptyPalace);
   const [palaceId, setPalaceId] = useState(null);
+  const [unavailableDates, setUnavailableDates] = useState([]);
   const [palaceStatus, setPalaceStatus] = useState("");
+  const [availabilitySaving, setAvailabilitySaving] = useState(false);
   const [loadingPalace, setLoadingPalace] = useState(true);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
@@ -171,7 +144,11 @@ export const PalaceOwners = () => {
         setShowCreateWizard(false);
         setPalaceId(palace._id);
         setPalaceStatus(palace.status || "pending");
-
+        setUnavailableDates(
+          (Array.isArray(palace.unavailableDates) ? palace.unavailableDates : [])
+            .map(getDateKey)
+            .filter(Boolean)
+        );
         setPalaceForm({
           name: palace.name || "",
           location: palace.location || "",
@@ -221,7 +198,7 @@ export const PalaceOwners = () => {
       setPalaceStatus(data.status || "");
       setNotice(
         data.message ||
-          `Your palace status is now ${data.status || "updated"}.`
+        `Your palace status is now ${data.status || "updated"}.`
       );
     });
 
@@ -231,7 +208,82 @@ export const PalaceOwners = () => {
 
     return () => socket.disconnect();
   }, [palaceId]);
+  useEffect(() => {
+    const fetchOwnerBookings = async () => {
+      try {
+        setLoadingBookings(true);
+        const currentUser = JSON.parse(
+          localStorage.getItem("currentUser") || "null"
+        );
+        const token =
+          localStorage.getItem("token") ||
+          currentUser?.token ||
+          currentUser?.accessToken;
 
+        if (!token) {
+          throw new Error("Please log in again to view bookings.");
+        }
+        const response = await fetch(`${API_URL}/booking/owner`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Unable to load booking requests."
+          );
+        }
+        const bookingList = Array.isArray(data)
+          ? data
+          : data.bookings || data.data || [];
+        const formattedBookings = bookingList.map((booking) => {
+          const customer =
+            booking.user && typeof booking.user === "object"
+              ? booking.user
+              : {};
+
+          const palace =
+            booking.palace && typeof booking.palace === "object"
+              ? booking.palace
+              : {};
+
+          const rawStatus = (
+            booking.bookingStatus || "pending"
+          ).toLowerCase();
+
+          return {
+            id: booking._id,
+            name: customer.name || "Customer",
+            email: customer.email || "Email unavailable",
+            event: palace.name || "Wedding Ceremony",
+            dateKey: getDateKey(booking.weddingDate),
+            date: booking.weddingDate
+              ? new Date(booking.weddingDate).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+              : "Date unavailable",
+            guests: booking.guestCount ?? 0,
+            amount: Number(booking.totalPrice) || 0,
+            status:
+              rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1),
+            specialRequests: booking.specialRequests || "",
+          };
+        });
+        setBookings(formattedBookings);
+      } catch (error) {
+        console.error("Fetch owner bookings error:", error);
+        setNotice(error.message || "Unable to load bookings.");
+      } finally {
+        setLoadingBookings(false);
+      }
+    };
+
+    fetchOwnerBookings();
+  }, []);
   const money = (amount) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -286,16 +338,60 @@ export const PalaceOwners = () => {
     }
   })();
 
-  const handleBooking = (id, status) => {
-    setBookings((previous) =>
-      previous.map((booking) =>
-        booking.id === id ? { ...booking, status } : booking
-      )
-    );
+  const handleBooking = async (id, status) => {
+    try {
+      setBookingActionId(id);
 
-    setNotice(
-      "Booking updated in this dashboard only. Connect the booking API to save this change."
-    );
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "null"
+      );
+
+      const token =
+        localStorage.getItem("token") ||
+        currentUser?.token ||
+        currentUser?.accessToken;
+
+      if (!token) {
+        throw new Error("Please log in again.");
+      }
+
+      const response = await fetch(
+        `${API_URL}/booking/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            bookingStatus: status.toLowerCase(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Unable to update booking status."
+        );
+      }
+
+      setBookings((previous) =>
+        previous.map((booking) =>
+          booking.id === id
+            ? { ...booking, status }
+            : booking
+        )
+      );
+
+      setNotice(`Booking ${status.toLowerCase()} successfully.`);
+    } catch (error) {
+      console.error("Update booking error:", error);
+      setNotice(error.message || "Unable to update booking.");
+    } finally {
+      setBookingActionId(null);
+    }
   };
 
   const handlePalaceField = (event) => {
@@ -328,13 +424,84 @@ export const PalaceOwners = () => {
 
     event.target.value = "";
   };
+  const handleAvailabilityChange = async (dateKey) => {
 
+    if (!palaceId || !dateKey || availabilitySaving) return;
+
+    const dateBookings = bookings.filter(
+      (booking) => booking.dateKey === dateKey
+    );
+
+    const hasBookingConflict = dateBookings.some(
+      (booking) => ["Pending", "Confirmed"].includes(booking.status)
+    );
+
+    const currentlyUnavailable = unavailableDates.includes(dateKey);
+
+    if (hasBookingConflict && !currentlyUnavailable) {
+      setNotice(
+        "This date has a booking request or confirmed booking. Resolve the booking before blocking it."
+      );
+      return;
+    }
+
+    const nextUnavailable = !currentlyUnavailable;
+
+    try {
+      setAvailabilitySaving(true);
+
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "null"
+      );
+
+      const token =
+        localStorage.getItem("token") ||
+        currentUser?.token ||
+        currentUser?.accessToken;
+
+      if (!token) {
+        throw new Error("Please log in again.");
+      }
+
+      const response = await fetch(
+        `${API_URL}/palace/${palaceId}/availability`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            date: dateKey,
+            unavailable: nextUnavailable,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to update availability.");
+      }
+
+      setUnavailableDates((previous) =>
+        nextUnavailable
+          ? [...new Set([...previous, dateKey])]
+          : previous.filter((date) => date !== dateKey)
+      );
+
+      setNotice(data.message || "Availability updated successfully.");
+    } catch (error) {
+      setNotice(error.message || "Unable to update availability.");
+    } finally {
+      setAvailabilitySaving(false);
+    }
+  };
   useEffect(() => {
     return () => {
       selectedPhotos.forEach((photo) => URL.revokeObjectURL(photo.url));
     };
   }, [selectedPhotos]);
-
   const displayName = palaceForm.name || owner.name || "Palace Owner";
   const initials = getInitials(displayName);
   const today = new Date().toLocaleDateString("en-IN", {
@@ -722,6 +889,7 @@ export const PalaceOwners = () => {
                 money={money}
                 handleBooking={handleBooking}
                 setActiveTab={setActiveTab}
+                bookingActionId={bookingActionId}
                 compact
               />
             </>
@@ -884,42 +1052,33 @@ export const PalaceOwners = () => {
           )}
 
           {activeTab === "Bookings" && (
-            <BookingTable
-              bookings={filteredBookings}
-              money={money}
-              handleBooking={handleBooking}
-              setActiveTab={setActiveTab}
-            />
+            <section>
+              {loadingBookings ? (
+                <div className="po-panel">
+                  <p>Loading booking requests...</p>
+                </div>
+              ) : (
+                <BookingTable
+                  bookings={filteredBookings}
+                  money={money}
+                  handleBooking={handleBooking}
+                  setActiveTab={setActiveTab}
+                  bookingActionId={bookingActionId}
+                />
+              )}
+            </section>
           )}
 
           {activeTab === "Availability" && (
-            <section className="po-panel po-form-panel">
-              <div className="po-section-heading">
-                <h3>Venue Availability</h3>
-                <p>Select a date to review availability.</p>
-              </div>
-
-              <div className="po-availability-box">
-                <label>
-                  Select date
-                  <input
-                    type="date"
-                    onChange={(event) => {
-                      if (event.target.value) {
-                        setNotice(
-                          `Selected date: ${event.target.value}. No availability changes have been saved.`
-                        );
-                      }
-                    }}
-                  />
-                </label>
-
-                <p>
-                  Availability is not yet connected to a backend endpoint.
-                  Selecting a date does not change customer-facing availability.
-                </p>
-              </div>
-            </section>
+            <AvailabilityDates
+              bookings={bookings}
+              unavailableDates={unavailableDates}
+              pendingCount={pendingCount}
+              availabilitySaving={availabilitySaving}
+              onAvailabilityChange={handleAvailabilityChange}
+              money={money}
+              getInitials={getInitials}
+            />
           )}
 
           {activeTab === "Payments" && (
@@ -1024,6 +1183,7 @@ function BookingTable({
   money,
   handleBooking,
   setActiveTab,
+  bookingActionId,
   compact = false,
 }) {
   return (
@@ -1101,17 +1261,19 @@ function BookingTable({
                       <button
                         type="button"
                         className="po-accept-button"
+                        disabled={bookingActionId === booking.id}
                         onClick={() =>
                           handleBooking(booking.id, "Confirmed")
                         }
                         title="Accept booking"
                       >
                         <FiCheckCircle />
-                        Accept
+                        {bookingActionId === booking.id ? "Updating..." : "Accept"}
                       </button>
                       <button
                         type="button"
                         className="po-reject-button"
+                        disabled={bookingActionId === booking.id}
                         onClick={() =>
                           handleBooking(booking.id, "Rejected")
                         }
@@ -1143,7 +1305,6 @@ function BookingTable({
 
       <div className="po-table-footer">
         Showing {bookings.length} booking request(s).
-        Booking rows currently use sample data.
       </div>
     </section>
   );

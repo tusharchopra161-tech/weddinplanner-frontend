@@ -73,13 +73,13 @@ export const FilterSection = () => {
 
             return 0;
         });
-         useEffect(() => {
-        const interval = setInterval(() => {
-            setVisibleCount(filteredPalaces.length);
-        }, 5000);
+    //      useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         setVisibleCount(filteredPalaces.length);
+    //     }, 5000);
 
-        return () => clearInterval(interval);
-    }, [filteredPalaces.length]);
+    //     return () => clearInterval(interval);
+    // }, [filteredPalaces.length]);
 
     return (
         <div className="fil-main ">
@@ -172,11 +172,10 @@ export const FilterSection = () => {
             <div className="palace-results">
 
                 <div className="palace-results-header">
-                    <div className="palace-results-header">
+                    <div>
                         <h2 className="palace-results-title">
                             Palaces for your love story
                         </h2>
-
                         <p className="text-[#654E63] text-sm">
                             {loading
                                 ? 'Loading palaces...'
