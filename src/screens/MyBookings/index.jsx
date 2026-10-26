@@ -1,3 +1,4 @@
+import { io } from 'socket.io-client';
 import  { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -16,8 +17,7 @@ export const MyBookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    useEffect(() => {
-        const fetchBookings = async () => {
+    const fetchBookings = async () => {
             try {
                 setLoading(true);
                 setError('');
@@ -56,9 +56,53 @@ export const MyBookings = () => {
                 setLoading(false);
             }
         };
+    useEffect(() => {
+    const token = localStorage.getItem('token');
 
+    if (!token) {
+        navigate('/login');
+        return undefined;
+    }
+
+    fetchBookings();
+
+    const socket = io(API_URL, {
+        auth: { token },
+        transports: ['websocket', 'polling'],
+    });
+
+    socket.on('booking-status-updated', (data) => {
+        console.log('MyBookings received status update:', data);
+
+        if (!data?.bookingId) return;
+
+        // Update the matching card immediately.
+        setBookings((previous) =>
+            previous.map((booking) =>
+                String(booking._id) === String(data.bookingId)
+                    ? {
+                        ...booking,
+                        bookingStatus:
+                            data.bookingStatus || booking.bookingStatus,
+                    }
+                    : booking
+            )
+        );
+
+        // Then fetch the authoritative booking data.
         fetchBookings();
-    }, [navigate]);
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('MyBookings Socket.IO error:', error.message);
+    });
+
+    return () => {
+        socket.off('booking-status-updated');
+        socket.off('connect_error');
+        socket.disconnect();
+    };
+}, [navigate]);
 
     const formatDate = (date) => {
         if (!date) return 'Date not selected';

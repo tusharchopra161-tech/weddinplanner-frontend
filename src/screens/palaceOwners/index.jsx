@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   RiBankLine,
 } from "react-icons/ri";
@@ -66,6 +66,10 @@ const getInitials = (name = "") => {
     .map((part) => part[0].toUpperCase())
     .join("") || "PO";
 };
+const getNotificationId = (notification) =>
+  notification.id ||
+  notification.bookingId ||
+  `${notification.type || "notification"}-${Date.now()}-${Math.random()}`;
 const getDateKey = (value) => {
   const date = new Date(value);
 
@@ -96,7 +100,8 @@ export const PalaceOwners = () => {
   const [loadingPalace, setLoadingPalace] = useState(true);
   const [showCreateWizard, setShowCreateWizard] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
-
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   useEffect(() => {
     if (!notice) return undefined;
 
@@ -187,6 +192,42 @@ export const PalaceOwners = () => {
       transports: ["websocket", "polling"],
     });
 
+    socket.on("new-booking-request", (data) => {
+      addNotification(data, "booking-request");
+
+      // Refresh the booking table with the latest backend data.
+      fetchOwnerBookingsRef.current?.();
+    });
+
+    socket.on("booking-request-expired", (data) => {
+      addNotification(data, "booking-expired");
+
+      // Refresh so the expired booking is no longer shown as pending.
+      fetchOwnerBookingsRef.current?.();
+    });
+
+    socket.on("booking-status-updated", (data) => {
+      addNotification(data, "booking-status");
+
+      if (data?.bookingId && data?.status) {
+        setBookings((previous) =>
+          previous.map((booking) =>
+            booking.id === String(data.bookingId)
+              ? {
+                ...booking,
+                status:
+                  data.status.charAt(0).toUpperCase() +
+                  data.status.slice(1).toLowerCase(),
+              }
+              : booking
+          )
+        );
+      }
+
+      // Fetch the authoritative status from the backend.
+      fetchOwnerBookingsRef.current?.();
+    });
+
     socket.on("palace-status-updated", (data) => {
       if (
         palaceId &&
@@ -206,8 +247,16 @@ export const PalaceOwners = () => {
       console.error("Owner Socket.IO error:", error.message);
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("new-booking-request");
+      socket.off("booking-request-expired");
+      socket.off("booking-status-updated");
+      socket.off("palace-status-updated");
+      socket.off("connect_error");
+      socket.disconnect();
+    };
   }, [palaceId]);
+
   useEffect(() => {
     const fetchOwnerBookings = async () => {
       try {
@@ -281,9 +330,29 @@ export const PalaceOwners = () => {
         setLoadingBookings(false);
       }
     };
-
+    fetchOwnerBookingsRef.current = fetchOwnerBookings;
     fetchOwnerBookings();
+    return () => {
+      fetchOwnerBookingsRef.current = null;
+    };
   }, []);
+  const fetchOwnerBookingsRef = useRef(null);
+
+  const addNotification = (data, type) => {
+    const notification = {
+      id: getNotificationId(data),
+      type,
+      message: data?.message || "You have a booking update.",
+      bookingId: data?.bookingId || data?.booking?._id || null,
+      createdAt: new Date(),
+      read: false,
+    };
+
+    setNotifications((previous) => [
+      notification,
+      ...previous.filter((item) => item.id !== notification.id),
+    ]);
+  };
   const money = (amount) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -642,23 +711,91 @@ export const PalaceOwners = () => {
               />
             </div>
 
-            <button
-              type="button"
-              className="po-notification-button"
-              title="Notifications"
-              onClick={() =>
-                setNotice(
-                  palaceStatus
-                    ? `Current palace status: ${statusInfo.label}`
-                    : "No new palace status information."
-                )
-              }
-            >
-              <FiBell />
-              {palaceStatus.toLowerCase() === "pending" && (
-                <span className="po-notification-dot" />
+            <div className="po-notification-wrapper">
+              <button
+                type="button"
+                className="po-notification-button"
+                title="Notifications"
+                aria-label="Open notifications"
+                aria-expanded={showNotifications}
+                onClick={() => {
+                  setShowNotifications((previous) => !previous);
+                  setNotifications((previous) =>
+                    previous.map((item) => ({ ...item, read: true }))
+                  );
+                }}
+              >
+                <FiBell />
+
+                {notifications.some((item) => !item.read) && (
+                  <span className="po-notification-dot" />
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="po-notification-dropdown">
+                  <div className="po-notification-header">
+                    <strong>Notifications</strong>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowNotifications(false)}
+                      aria-label="Close notifications"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {notifications.length === 0 ? (
+                    <p className="po-notification-empty">
+                      No notifications yet.
+                    </p>
+                  ) : (
+                    <div className="po-notification-list">
+                      {notifications.map((item) => (
+                        <div
+                          className={`po-notification-item ${item.type === "booking-expired"
+                              ? "po-notification-expired"
+                              : ""
+                            }`}
+                          key={item.id}
+                        >
+                          <strong>
+                            {item.type === "booking-request"
+                              ? "New booking request"
+                              : item.type === "booking-expired"
+                                ? "Booking expired"
+                                : "Booking update"}
+                          </strong>
+
+                          <p>{item.message}</p>
+
+                          <small>
+                            {item.createdAt.toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </small>
+
+                          {item.bookingId && (
+                            <button
+                              type="button"
+                              className="po-text-button"
+                              onClick={() => {
+                                setActiveTab("Bookings");
+                                setShowNotifications(false);
+                              }}
+                            >
+                              View bookings →
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
+            </div>
 
             <div className="po-topbar-profile">
               <div className="po-topbar-profile-copy">

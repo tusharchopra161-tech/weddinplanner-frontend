@@ -16,6 +16,7 @@ import {
     FaBars
 } from 'react-icons/fa';
 import './palaceDetails.css';
+import WeddingDateCalendar from '../../components/WeddingDateCalendar';
 
 const API_URL = 'https://weddingplanner-backend.onrender.com';
 
@@ -505,19 +506,24 @@ export const PalaceDetails = () => {
 
                             <form onSubmit={handleBooking}>
                                 <label htmlFor="pd-date">Wedding date</label>
-                                <div className="pd-input-wrap">
-                                    <input
-                                        id="pd-date"
-                                        type="date"
-                                        name="weddingDate"
-                                        min={getMinWeddingDate()}
-                                        value={form.weddingDate}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <FaRegCalendarAlt />
-                                </div>
-
+                                <WeddingDateCalendar
+                                    palaceId={palaceId}
+                                    value={form.weddingDate}
+                                    minDate={getMinWeddingDate()}
+                                    onChange={(date) =>
+                                        setForm((previous) => ({
+                                            ...previous,
+                                            weddingDate: date,
+                                        }))
+                                    }
+                                />
+                                <input
+                                    id="pd-date"
+                                    type="hidden"
+                                    name="weddingDate"
+                                    value={form.weddingDate}
+                                    required
+                                />
                                 <label htmlFor="pd-guests">Guest count</label>
                                 <div className="pd-input-wrap">
                                     <input
