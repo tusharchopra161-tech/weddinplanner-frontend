@@ -6,7 +6,7 @@ import { Footer } from '../../components/Footer';
 
 export const Layout = () => {
    const location= useLocation();
-   const hideLayout=location.pathname==="/login"||location.pathname==="/signup"||location.pathname==="/owner-dashboard" ||location.pathname==="/admin-dashboard" || location.pathname.startsWith("/palace/");
+   const hideLayout=location.pathname==="/login"||location.pathname==="/signup"||location.pathname==="/owner-dashboard" ||location.pathname==="/admin-dashboard" ;
   return (
     <>
     {!hideLayout?<Nav/>:<></>}

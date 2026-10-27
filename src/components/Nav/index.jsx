@@ -23,9 +23,6 @@ export const Nav = () => {
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const notificationStorageKey = user?.email
-    ? `bookingNotifications_${user.email}`
-    : null;
   const unreadCount = notifications.filter(
     (notification) => !notification.read
   ).length;
@@ -39,12 +36,10 @@ export const Nav = () => {
     "#D0C4B5",
     "#B9B0C4",
   ]
-
   const getbgcolor = () => {
     const idx = user?.name?.charCodeAt(0) % colors.length
     return colors[idx]
   }
-
   const firstLetter = user?.name?.[0]?.toUpperCase() || ""
   const bgcolor = getbgcolor()
 
@@ -65,24 +60,6 @@ export const Nav = () => {
       stagger: 1
     })
   }, [])
-  
-  useEffect(() => {
-    if (!notificationStorageKey) {
-      setNotifications([]);
-      return;
-    }
-
-    try {
-      const saved = JSON.parse(
-        localStorage.getItem(notificationStorageKey) || "[]"
-      );
-
-      setNotifications(Array.isArray(saved) ? saved : []);
-    } catch {
-      setNotifications([]);
-    }
-  }, [notificationStorageKey]);
-
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -150,32 +127,59 @@ export const Nav = () => {
       socket.disconnect();
     };
   }, []);
-
-  // Persist notifications across page refreshes.
   useEffect(() => {
-    if (!notificationStorageKey) return;
+    if (!islogin) return;
 
-    localStorage.setItem(
-      notificationStorageKey,
-      JSON.stringify(notifications)
-    );
-  }, [notifications, notificationStorageKey]);
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (!token) return;
+    let cancelled = false;
 
-  const socket = io(API_URL, {
-    auth: { token },
-    transports: ["websocket", "polling"],
-  });
+    const loadNotifications = async () => {
+      try {
+        const response = await fetch(`${API_URL}/notifications/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  socket.on("booking-status-updated", () => {
-    fetchMyBookings();
-  });
+        const data = await response.json();
 
-  return () => socket.disconnect();
-}, []);
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load notifications");
+        }
+
+        if (cancelled) return;
+
+        const savedNotifications = (data.notifications || []).map((item) => ({
+          id: String(item._id),
+          bookingId: item.booking?._id || item.booking || null,
+          palaceId: item.palace?._id || item.palace || null,
+          bookingStatus: item.bookingStatus || (
+            item.type === "booking-request"
+              ? "pending"
+              : item.type === "booking-expired"
+                ? "expired"
+                : "updated"
+          ),
+          message: item.message,
+          title: item.title,
+          createdAt: item.createdAt,
+          read: item.read,
+          type: item.type,
+        }));
+        setNotifications(savedNotifications);
+      } catch (error) {
+        console.error("Load user notifications error:", error);
+      }
+    };
+
+    loadNotifications();
+    return () => {
+      cancelled = true;
+    };
+  }, [islogin]);
+
   const toggleNotifications = () => {
     if (!islogin) {
       navigate("/login");
@@ -187,7 +191,32 @@ export const Nav = () => {
     closeMenu();
   };
 
-  const openNotification = (notification) => {
+
+  const openNotification = async (notification) => {
+    if (!notification.read && /^[a-f\d]{24}$/i.test(notification.id)) {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+          `${API_URL}/notifications/${notification.id}/read`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to mark notification as read");
+        }
+      } catch (error) {
+        console.error("Mark notification read error:", error);
+      }
+    }
+
     setNotifications((previous) =>
       previous.map((item) =>
         item.id === notification.id
@@ -200,11 +229,69 @@ export const Nav = () => {
     navigate("/my-bookings");
   };
 
-  const markAllNotificationsRead = () => {
+
+  const markAllNotificationsRead = async () => {
+    // Immediately remove all unread dots and the bell badge.
     setNotifications((previous) =>
       previous.map((item) => ({ ...item, read: true }))
     );
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/notifications/read-all`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to mark all as read");
+      }
+    } catch (error) {
+      console.error("Mark all notifications read error:", error);
+      // Reload the saved status from MongoDB if the request fails.
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/notifications/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setNotifications((data.notifications || []).map((item) => ({
+            id: String(item._id),
+            bookingId: item.booking?._id || item.booking || null,
+            palaceId: item.palace?._id || item.palace || null,
+            bookingStatus: item.bookingStatus || (
+              item.type === "booking-request"
+                ? "pending"
+                : item.type === "booking-expired"
+                  ? "expired"
+                  : "updated"
+            ),
+            message: item.message,
+            title: item.title,
+            createdAt: item.createdAt,
+            read: item.read,
+            type: item.type,
+          })));
+        }
+      } catch (reloadError) {
+        console.error("Failed to reload notifications:", reloadError);
+      }
+    }
   };
+
   const clicklog = () => {
     setIsClick(prev => !prev)
   }

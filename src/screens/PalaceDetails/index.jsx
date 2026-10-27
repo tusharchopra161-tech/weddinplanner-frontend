@@ -13,8 +13,11 @@ import {
     FaRegCalendarAlt,
     FaUsers,
     FaShieldAlt,
-    FaBars
+    FaBars,
+    FaChevronLeft,
+    FaChevronRight
 } from 'react-icons/fa';
+import { IoMdArrowRoundBack } from "react-icons/io";
 import './palaceDetails.css';
 import WeddingDateCalendar from '../../components/WeddingDateCalendar';
 
@@ -32,7 +35,7 @@ export const PalaceDetails = () => {
     const [favorite, setFavorite] = useState(false);
     const [activeTab, setActiveTab] = useState('Overview');
     const [showFullDescription, setShowFullDescription] = useState(false);
-
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [form, setForm] = useState({
         weddingDate: '',
         guestCount: '',
@@ -203,7 +206,16 @@ export const PalaceDetails = () => {
             setSubmitting(false);
         }
     };
-
+    const showPreviousImage = () => {
+        setActiveImageIndex((prev) =>
+            prev === 0 ? images.length - 1 : prev - 1
+        );
+    };
+    const showNextImage = () => {
+        setActiveImageIndex((prev) =>
+            prev === images.length - 1 ? 0 : prev + 1
+        );
+    };
     if (loading) {
         return (
             <div className="pd-status">
@@ -232,13 +244,13 @@ export const PalaceDetails = () => {
     return (
         <main className="pd-page">
             {/* Navigation */}
-            <header className="pd-header">
+            {/* <header className="pd-header">
                 <button
                     className="pd-mobile-menu"
                     aria-label="Back to palaces"
                     onClick={() => navigate('/palaces')}
                 >
-                    <FaBars />
+                    <IoMdArrowRoundBack />
                 </button>
 
                 <button
@@ -246,15 +258,8 @@ export const PalaceDetails = () => {
                     onClick={() => navigate('/')}
                     aria-label="Vow and Vine home"
                 >
-                    VOW <span>&</span> VINE
+                    {palace.name}
                 </button>
-
-                <nav className="pd-nav-links">
-                    <button onClick={() => navigate('/palaces')}>Venues</button>
-                    <button onClick={() => navigate('/palaces')}>Vendors</button>
-                    <button onClick={() => navigate('/palaces')}>Inspiration</button>
-                    <button onClick={() => navigate('/palaces')}>Planning tools</button>
-                </nav>
 
                 <div className="pd-header-actions">
                     <button
@@ -266,26 +271,9 @@ export const PalaceDetails = () => {
                     <span className="pd-avatar">AM</span>
                     <button onClick={() => navigate('/login')}>My wedding</button>
                 </div>
-            </header>
+            </header> */}
 
             <div className="pd-container">
-                {/* Breadcrumb */}
-                <div className="pd-breadcrumb">
-                    <button onClick={() => navigate('/palaces')}>Venues</button>
-                    <span>›</span>
-                    <span>{palace.location || 'Your destination'}</span>
-                    <span>›</span>
-                    <span>Palace venues</span>
-
-                    <button
-                        className={`pd-mobile-heart ${favorite ? 'is-active' : ''}`}
-                        aria-label="Save venue"
-                        onClick={() => setFavorite((previous) => !previous)}
-                    >
-                        {favorite ? <FaHeart /> : <FaRegHeart />}
-                    </button>
-                </div>
-
                 {/* Title and highlights */}
                 <section className="pd-title-row">
                     <div className="pd-title-copy">
@@ -302,7 +290,11 @@ export const PalaceDetails = () => {
                                 <FaStar /><FaStar /><FaStar /><FaStar /><FaStar />
                             </span>
                             <strong>{palace.rating || 'New'}</strong>
-                            <span>{palace.rating ? 'Guest rating' : 'Be among the first to visit'}</span>
+                            <span>
+                                {palace.rating
+                                    ? 'Guest rating'
+                                    : 'Be among the first to visit'}
+                            </span>
                         </div>
 
                         <p className="pd-short-description">
@@ -312,29 +304,43 @@ export const PalaceDetails = () => {
                         </p>
                     </div>
 
-                    <aside className="pd-love-card">
-                        <h3>Why couples love it</h3>
-                        <div className="pd-love-items">
-                            <div>
-                                <FaLandmark />
-                                <span>Unique venue</span>
-                            </div>
-                            <div>
-                                <FaTree />
-                                <span>Special celebrations</span>
-                            </div>
-                            <div>
-                                <FaHotel />
-                                <span>One-site stay</span>
-                            </div>
+                    <div className="pd-title-side">
+                        <div className="pd-header-actions">
+                            <button
+                                type="button"
+                                className={`pd-save-button ${favorite ? 'is-saved' : ''}`}
+                                onClick={() => setFavorite((previous) => !previous)}
+                                aria-pressed={favorite}
+                            >
+                                {favorite ? <FaHeart /> : <FaRegHeart />}
+                                <span>{favorite ? 'Saved' : 'Save'}</span>
+                            </button>
                         </div>
-                    </aside>
-                </section>
 
+                        <aside className="pd-love-card">
+                            <h3>Why couples love it</h3>
+
+                            <div className="pd-love-items">
+                                <div>
+                                    <FaLandmark />
+                                    <span>Unique venue</span>
+                                </div>
+                                <div>
+                                    <FaTree />
+                                    <span>Special celebrations</span>
+                                </div>
+                                <div>
+                                    <FaHotel />
+                                    <span>One-site stay</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
                 {/* Gallery */}
                 <section className="pd-main-grid">
                     <div className="pd-left-column">
-                        <div className="pd-gallery">
+                        {/* <div className="pd-gallery">
                             <div className="pd-gallery-main">
                                 {mainImage ? (
                                     <img src={mainImage} alt={palace.name} />
@@ -369,8 +375,61 @@ export const PalaceDetails = () => {
                                     <span>Explore the grounds</span>
                                 </div>
                             </div>
+                        </div> */}
+                        <div className="pd-main-image">
+                            {images.length > 0 && (
+                                <>
+                                    <img
+                                        src={images[activeImageIndex]}
+                                        alt={`${palace?.name || "Palace"} - Image ${activeImageIndex + 1}`}
+                                        className="pd-main-photo"
+                                    />
+
+                                    {images.length > 1 && (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="pd-gallery-arrow pd-gallery-prev"
+                                                onClick={showPreviousImage}
+                                                aria-label="Previous image"
+                                            >
+                                                <FaChevronLeft />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="pd-gallery-arrow pd-gallery-next"
+                                                onClick={showNextImage}
+                                                aria-label="Next image"
+                                            >
+                                                <FaChevronRight />
+                                            </button>
+
+                                            <span className="pd-image-counter">
+                                                {activeImageIndex + 1} / {images.length}
+                                            </span>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </div>
 
+                        {images.length > 1 && (
+                            <div className="pd-image-thumbnails">
+                                {images.map((image, index) => (
+                                    <button
+                                        type="button"
+                                        key={`${image}-${index}`}
+                                        className={`pd-thumbnail ${activeImageIndex === index ? "active" : ""
+                                            }`}
+                                        onClick={() => setActiveImageIndex(index)}
+                                        aria-label={`View image ${index + 1}`}
+                                    >
+                                        <img src={image} alt={`Palace view ${index + 1}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         {/* Tabs */}
                         <nav className="pd-tabs" aria-label="Venue information">
                             {tabs.map((tab) => (

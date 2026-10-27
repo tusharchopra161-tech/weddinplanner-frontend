@@ -68,8 +68,11 @@ const getInitials = (name = "") => {
 };
 const getNotificationId = (notification) =>
   notification.id ||
-  notification.bookingId ||
-  `${notification.type || "notification"}-${Date.now()}-${Math.random()}`;
+  `${notification.type || "notification"}-${
+    notification.bookingId ||
+    notification.booking?._id ||
+    `${Date.now()}-${Math.random()}`
+  }`;
 const getDateKey = (value) => {
   const date = new Date(value);
 
@@ -102,6 +105,50 @@ export const PalaceOwners = () => {
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const fetchOwnerBookingsRef = useRef(null);
+  const fetchOwnerNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/notifications/my`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to load notifications.");
+      }
+
+      const savedNotifications = (data.notifications || []).map((item) => ({
+        id: String(item._id),
+        type:
+          item.type === "booking-expired"
+            ? "booking-expired"
+            : item.type === "booking-request"
+              ? "booking-request"
+              : "booking-status",
+        message: item.message || "You have a booking update.",
+        bookingId: item.booking?._id || item.booking || null,
+        createdAt: new Date(item.createdAt),
+        read: Boolean(item.read),
+      }));
+
+      setNotifications(savedNotifications);
+    } catch (error) {
+      console.error("Fetch owner notifications error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchOwnerNotifications();
+  }, []);
+
   useEffect(() => {
     if (!notice) return undefined;
 
@@ -336,7 +383,6 @@ export const PalaceOwners = () => {
       fetchOwnerBookingsRef.current = null;
     };
   }, []);
-  const fetchOwnerBookingsRef = useRef(null);
 
   const addNotification = (data, type) => {
     const notification = {
@@ -347,12 +393,44 @@ export const PalaceOwners = () => {
       createdAt: new Date(),
       read: false,
     };
-
     setNotifications((previous) => [
       notification,
       ...previous.filter((item) => item.id !== notification.id),
     ]);
   };
+
+  const handleNotificationBellClick = async () => {
+    const willOpen = !showNotifications;
+
+    setShowNotifications(willOpen);
+
+    if (!willOpen) return;
+
+    // Update the bell immediately in the UI.
+    setNotifications((previous) =>
+      previous.map((item) => ({ ...item, read: true }))
+    );
+
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/notifications/read-all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error("Unable to save notification read status.");
+      }
+    } catch (error) {
+      console.error("Mark notifications as read error:", error);
+    }
+  };
+
   const money = (amount) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -718,12 +796,7 @@ export const PalaceOwners = () => {
                 title="Notifications"
                 aria-label="Open notifications"
                 aria-expanded={showNotifications}
-                onClick={() => {
-                  setShowNotifications((previous) => !previous);
-                  setNotifications((previous) =>
-                    previous.map((item) => ({ ...item, read: true }))
-                  );
-                }}
+                onClick={handleNotificationBellClick}
               >
                 <FiBell />
 
@@ -755,8 +828,8 @@ export const PalaceOwners = () => {
                       {notifications.map((item) => (
                         <div
                           className={`po-notification-item ${item.type === "booking-expired"
-                              ? "po-notification-expired"
-                              : ""
+                            ? "po-notification-expired"
+                            : ""
                             }`}
                           key={item.id}
                         >
@@ -771,7 +844,7 @@ export const PalaceOwners = () => {
                           <p>{item.message}</p>
 
                           <small>
-                            {item.createdAt.toLocaleTimeString("en-IN", {
+                            {new Date(item.createdAt).toLocaleTimeString("en-IN", {
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
