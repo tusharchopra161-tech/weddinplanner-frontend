@@ -78,14 +78,13 @@ export const VenueCreation = () => {
     setCurrentStep((previous) => Math.min(previous + 1, 3));
   };
 
- 
-const handlePublish = async () => {
-  try {
+
+  const handlePublish = async () => {
+
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please log in again as a venue owner.");
-      return;
+      throw new Error("Please log in again as a venue owner.");
     }
 
     const formData = new FormData();
@@ -115,7 +114,7 @@ const handlePublish = async () => {
       }
     );
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     console.log("Publish status:", response.status);
     console.log("Publish response:", data);
@@ -137,12 +136,27 @@ const handlePublish = async () => {
         palaceId: data.palace._id,
       },
     });
-  } catch (error) {
-    console.error("Publish venue error:", error);
-    alert(error.message || "Something went wrong.");
-  }
-};
 
+  };
+  const handleCoverSelect = (selectedIndex) => {
+    setVenueForm((prev) => {
+      const updatedImages = [...(prev.Images || [])];
+
+      if (
+        selectedIndex < 0 ||
+        selectedIndex >= updatedImages.length
+      ) {
+        return prev;
+      }
+
+      const [selectedImage] = updatedImages.splice(selectedIndex, 1);
+
+      return {
+        ...prev,
+        Images: [selectedImage, ...updatedImages],
+      };
+    });
+  };
 
   return (
     <div className="venue-workspace">
@@ -298,6 +312,7 @@ const handlePublish = async () => {
                   onBack={goBack}
                   onEditStep={setCurrentStep}
                   onPublish={handlePublish}
+                  onCoverSelect={handleCoverSelect}
                 />
               )}
             </section>

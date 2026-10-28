@@ -28,7 +28,7 @@
     top: 2.5rem;
     left: 0;
     width: 100%;
-
+    /* padding-right:0.5rem; */
     background: linear-gradient(
         135deg,
         rgba(220, 250, 255, 0.48),
@@ -51,7 +51,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem;
     gap: 1rem;
 
     animation: navDown 1s ease-out forwards;
@@ -281,6 +281,9 @@
 
 /* Tablet */
 @media (max-width: 900px) and (min-width: 601px) {
+    .nav-bottom{
+        padding: 0.5rem 0.7rem;
+    }
     .nav-bottom {
         height: 4.5rem;
         justify-content: space-between;

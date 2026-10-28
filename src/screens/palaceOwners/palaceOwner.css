@@ -1552,6 +1552,7 @@
 }
 .po-notification-wrapper {
   position: relative;
+  flex-shrink: 0;
 }
 
 .po-notification-dropdown {
@@ -1562,6 +1563,7 @@
   max-width: calc(100vw - 32px);
   max-height: 420px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: #fffdf8;
   border: 1px solid #eadcc8;
   border-radius: 14px;
@@ -1627,4 +1629,13 @@
   color: #654e63;
   font-size: 13px;
   text-align: center;
+}
+
+@media (max-width: 600px) {
+  .po-notification-dropdown {
+    right: -8px;
+    width: 320px;
+    max-width: calc(70vw - 28px);
+    max-height: 40vh;
+  }
 }

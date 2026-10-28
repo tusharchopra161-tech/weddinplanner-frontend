@@ -17,7 +17,7 @@ const AdminDashboard = () => {
   const [activePage, setActivePage] = useState("Overview");
   const [notifications, setNotifications] = useState([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-
+  const [imageIndexes, setImageIndexes] = useState({});
   const currentUser = JSON.parse(
     localStorage.getItem("currentUser") || "{}"
   );
@@ -29,7 +29,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
       console.log(token)
-      const response = await fetch(`${API_URL}/palace/pending`,{
+      const response = await fetch(`${API_URL}/palace/pending`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,12 +55,13 @@ const AdminDashboard = () => {
   }, [fetchPendingPalaces]);
 
   // Listen for newly submitted palaces in real time.
+
   useEffect(() => {
     if (currentUser.role !== "admin") return;
-const token=localStorage.getItem("token")
-    const socket = io(API_URL,{
-      auth:{
-        token:token
+    const token = localStorage.getItem("token")
+    const socket = io(API_URL, {
+      auth: {
+        token: token
       }
     });
 
@@ -165,7 +166,21 @@ const token=localStorage.getItem("token")
     localStorage.removeItem("token");
     navigate("/login");
   };
+  const changePalaceImage = (palaceId, totalImages, direction) => {
+    if (totalImages <= 1) return;
 
+    setImageIndexes((previous) => {
+      const currentIndex = previous[palaceId] ?? 0;
+
+      const nextIndex =
+        (currentIndex + direction + totalImages) % totalImages;
+
+      return {
+        ...previous,
+        [palaceId]: nextIndex,
+      };
+    });
+  };
   const sidebarItems = [
     { name: "Overview", icon: "⌂" },
     { name: "Palace Approvals", icon: "♜" },
@@ -200,9 +215,8 @@ const token=localStorage.getItem("token")
             <button
               type="button"
               key={item.name}
-              className={`admin-nav-item ${
-                activePage === item.name ? "active" : ""
-              }`}
+              className={`admin-nav-item ${activePage === item.name ? "active" : ""
+                }`}
               onClick={() => setActivePage(item.name)}
             >
               <span className="admin-nav-icon">{item.icon}</span>
@@ -310,7 +324,7 @@ const token=localStorage.getItem("token")
                 </div>
               )}
             </div>
-            <EnablePushNotification/>  
+            <EnablePushNotification />
             <div className="admin-top-avatar">
               {(currentUser.name || "A").charAt(0).toUpperCase()}
             </div>
@@ -425,18 +439,64 @@ const token=localStorage.getItem("token")
               <div className="admin-palace-grid">
                 {palaces.map((palace) => (
                   <article className="admin-palace-card" key={palace._id}>
+
                     <div className="admin-palace-image">
-                      {palace.Images?.[0] ? (
-                        <img
-                          src={palace.Images[0]}
-                          alt={palace.name}
-                        />
+                      {palace.Images?.length > 0 ? (
+                        <>
+                          <img
+                            src={palace.Images[
+                              imageIndexes[palace._id] ?? 0
+                            ]}
+                            alt={`${palace.name} photo ${(imageIndexes[palace._id] ?? 0) + 1
+                              }`}
+                          />
+                          {palace.Images.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                className="admin-image-arrow admin-image-prev"
+                                aria-label="Previous palace photo"
+                                onClick={() =>
+                                  changePalaceImage(
+                                    palace._id,
+                                    palace.Images.length,
+                                    -1
+                                  )
+                                }
+                              >
+                                &#10094;
+                              </button>
+
+                              <button
+                                type="button"
+                                className="admin-image-arrow admin-image-next"
+                                aria-label="Next palace photo"
+                                onClick={() =>
+                                  changePalaceImage(
+                                    palace._id,
+                                    palace.Images.length,
+                                    1
+                                  )
+                                }
+                              >
+                                &#10095;
+                              </button>
+
+                              <span className="admin-image-counter">
+                                {(imageIndexes[palace._id] ?? 0) + 1}
+                                {" / "}
+                                {palace.Images.length}
+                              </span>
+                            </>
+                          )}
+                        </>
                       ) : (
                         <div className="admin-image-placeholder">⌂</div>
                       )}
 
                       <span className="admin-image-status">Pending review</span>
                     </div>
+
 
                     <div className="admin-palace-details">
                       <div className="admin-palace-title-row">

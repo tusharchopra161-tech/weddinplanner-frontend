@@ -1,16 +1,21 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 export const ReviewPublish = ({
   formData,
   onBack,
   onEditStep,
-  onPublish, }) => {
+  onPublish,
+  onCoverSelect,
+}) => {
   const [error, setError] = useState("");
-
+  const [isPublishing, setIsPublishing] = useState(false);
+  // Prevents rapid double-clicks before React re-renders.
+  const publishingRef = useRef(false);
   const images = formData.Images || [];
   const facilities = formData.facilities || [];
 
-  const validateAndPublish = () => {
+  const validateAndPublish = async () => {
+    if (publishingRef.current) return;
     if (
       !formData.name.trim() ||
       !formData.location.trim() ||
@@ -38,9 +43,19 @@ export const ReviewPublish = ({
       onEditStep(2);
       return;
     }
-
+    // Lock immediately, before starting the request.
+    publishingRef.current = true;
+    setIsPublishing(true);
     setError("");
-    onPublish();
+
+    try {
+      await onPublish();
+    } catch (err) {
+      setError(err?.message || "Failed to publish your venue. Please try again.");
+    } finally {
+      publishingRef.current = false;
+      setIsPublishing(false);
+    }
 
   };
 
@@ -134,7 +149,7 @@ export const ReviewPublish = ({
         </div>
 
         <p className="venue-review-muted">
-          {images.length} photo(s) selected
+          {images.length} photo(s) selected. Click a photo to make it your cover.
         </p>
 
         {images.length > 0 ? (
@@ -142,23 +157,35 @@ export const ReviewPublish = ({
             {images.map((image, index) => {
               const preview =
                 typeof image === "string" ? image : image.preview;
-
+              const isCover = index === 0;
               return (
-                <div
-                  className="venue-review-photo"
+                <button
+                  className={`venue-review-photo ${isCover ? "is-cover" : ""}`}
                   key={`${preview}-${index}`}
+                  onClick={() => onCoverSelect(index)}
+                  aria-label={
+                    isCover
+                      ? `Photo ${index + 1}, current cover photo`
+                      : `Make photo ${index + 1} the cover photo`
+                  }
+                  aria-pressed={isCover}
+                  title={isCover ? "Current cover photo" : "Set as cover"}
                 >
                   <img
                     src={preview}
                     alt={`Venue photo ${index + 1}`}
                   />
 
-                  {index === 0 && (
+                  {isCover ? (
                     <span className="venue-review-cover-label">
-                      Cover photo
+                      ✓ Cover photo
+                    </span>
+                  ) : (
+                    <span className="venue-review-cover-action">
+                      Set as cover
                     </span>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
@@ -217,8 +244,17 @@ export const ReviewPublish = ({
           type="button"
           className="venue-btn venue-btn-primary"
           onClick={validateAndPublish}
+          disabled={isPublishing}
+          aria-busy={isPublishing}
         >
-          Validate & Publish →
+          {isPublishing ? (
+            <>
+              <span className="venue-publish-spinner" aria-hidden="true" />
+              Publishing Venue...
+            </>
+          ) : (
+            "Validate & Publish →"
+          )}
         </button>
       </div>
     </div>

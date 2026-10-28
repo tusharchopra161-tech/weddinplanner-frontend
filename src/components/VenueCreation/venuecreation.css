@@ -1104,3 +1104,79 @@
     height: 110px;
   }
 }
+.venue-publish-spinner {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  margin-right: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: venue-publish-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+.venue-btn-primary:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+@keyframes venue-publish-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.venue-review-photo {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #fffdf8;
+  cursor: pointer;
+  text-align: left;
+}
+
+.venue-review-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.venue-review-photo.is-cover {
+  border-color: #c28d2e;
+}
+
+.venue-review-cover-label,
+.venue-review-cover-action {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 6px 9px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.venue-review-cover-label {
+  background: #692065;
+  color: #fffdf8;
+}
+
+.venue-review-cover-action {
+  background: rgba(255, 253, 248, 0.94);
+  color: #692065;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.venue-review-photo:hover .venue-review-cover-action,
+.venue-review-photo:focus-visible .venue-review-cover-action {
+  opacity: 1;
+}
+
+.venue-review-photo:focus-visible {
+  outline: 2px solid #692065;
+  outline-offset: 3px;
+}
