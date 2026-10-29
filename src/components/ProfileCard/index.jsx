@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './profilecard.css'
 import { FiLogOut } from "react-icons/fi";
+import { EnablePushNotification } from '../EnablePushNotification';
 
 export const ProfileCard = (props) => {
  const handlelog=()=>{
@@ -17,8 +18,9 @@ export const ProfileCard = (props) => {
         <p className='pemail text-[#654E63] text-[2.5vh]'>{props.user.email}</p>
       </div>
       
-      <div >
-        <button onClick={handlelog} className='logbtn text-[#692065] font-semibold text-xl justify-start w-[40%]'><FiLogOut/>Log Out</button>
+      <div className='flex gap-2 items-center'>
+        <button onClick={handlelog} className='logbtn text-[#692065] font-semibold text-xl justify-start w-[40%]'><FiLogOut className='bold'/>Log Out</button>
+        <EnablePushNotification/>
       </div>
     </div>
 

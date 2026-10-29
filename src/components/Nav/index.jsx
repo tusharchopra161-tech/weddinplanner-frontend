@@ -8,7 +8,7 @@ import { useGSAP } from "@gsap/react"
 import gsap from 'gsap'
 import { useNavigate } from 'react-router-dom'
 import { ProfileCard } from '../ProfileCard'
-
+import { EnablePushNotification } from '../EnablePushNotification';
 export const Nav = () => {
   const [islogin, setIsLogin] = useState(
     JSON.parse(localStorage.getItem("currentUser")) !== null
@@ -419,7 +419,6 @@ export const Nav = () => {
               >
                 List Your Venue
               </button>
-
               <button
                 id="sbtn"
                 onClick={() => {
@@ -465,7 +464,7 @@ export const Nav = () => {
               >
                 List Your Venue
               </button>
-
+              {isMenuOpen?<EnablePushNotification/>:<></>}
               <button
                 className="desktop-getbtn"
                 onClick={() => {

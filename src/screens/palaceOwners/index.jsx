@@ -25,6 +25,7 @@ import "./palaceOwner.css"
 import { AvailabilityDates } from "../../components/AvailabilityDates";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiLogOut } from "react-icons/fi";
+import { EnablePushNotification } from "../../components/EnablePushNotification";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
@@ -733,16 +734,17 @@ export const PalaceOwners = () => {
             <p className="po-muted-text">
               Requests awaiting your response
             </p>
-
             <button
               type="button"
               className="po-text-button"
-              onClick={() => setActiveTab("Bookings")}
+              onClick={() => {
+                setActiveTab("Bookings");
+                setMobileMenu(false);
+              }}
             >
               View bookings <span>→</span>
             </button>
           </div>
-
           <div className="po-profile">
             <span className="po-profile-avatar">{initials}</span>
             <div className="po-profile-info">
@@ -758,6 +760,7 @@ export const PalaceOwners = () => {
               <IoSettingsOutline />
             </button>
           </div>
+          <span className='enablenotifibtn'><EnablePushNotification /></span>
           <button
             type="button"
             className="po-logout-button"
@@ -878,7 +881,7 @@ export const PalaceOwners = () => {
                 </div>
               )}
             </div>
-
+            <span className='mobileenablenotifibtn'><EnablePushNotification /></span>
             <div className="po-topbar-profile">
               <div className="po-topbar-profile-copy">
                 <strong>{displayName}</strong>

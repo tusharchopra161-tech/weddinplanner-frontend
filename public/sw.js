@@ -1,8 +1,9 @@
+
 self.addEventListener("push", (event) => {
   let data = {
     title: "Wedding Planner",
-    body: "A new palace needs approval.",
-    url: "/admin-dashboard",
+    body: "You have a new notification.",
+    url: "/",
   };
 
   if (event.data) {
@@ -21,7 +22,7 @@ self.addEventListener("push", (event) => {
       body: data.body,
       tag: data.tag || "wedding-planner-notification",
       data: {
-        url: data.url || "/admin-dashboard",
+        url: data.url || "/",
       },
     })
   );
@@ -31,9 +32,14 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const targetUrl = new URL(
-    event.notification.data?.url || "/admin-dashboard",
+    event.notification.data?.url || "/",
     self.location.origin
-  ).href;
+  );
+
+  // Only allow navigation within this website.
+  if (targetUrl.origin !== self.location.origin) {
+    return;
+  }
 
   event.waitUntil(
     (async () => {
@@ -44,12 +50,12 @@ self.addEventListener("notificationclick", (event) => {
 
       for (const client of windows) {
         if (new URL(client.url).origin === self.location.origin) {
-          await client.navigate(targetUrl);
+          await client.navigate(targetUrl.href);
           return client.focus();
         }
       }
 
-      return self.clients.openWindow(targetUrl);
+      return self.clients.openWindow(targetUrl.href);
     })()
   );
 });

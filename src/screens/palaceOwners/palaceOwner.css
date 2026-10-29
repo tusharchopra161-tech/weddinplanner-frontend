@@ -1633,10 +1633,10 @@
 
 @media (max-width: 600px) {
   .po-notification-dropdown {
-    right: -8px;
+    right: -4px;
     width: 320px;
-    max-width: calc(70vw - 28px);
-    max-height: 40vh;
+    max-width: calc(100vw - 24px);
+    max-height: 50vh;
   }
 }
 .po-sidebar::-webkit-scrollbar{
@@ -1681,4 +1681,212 @@
   color: #b54141 !important;
   font-size: 18px;
   flex-shrink: 0;
+}
+
+/* Responsive sidebar and workspace improvements */
+
+.po-sidebar {
+  width: 260px;
+  max-width: 85vw;
+}
+
+.po-main {
+  width: calc(100% - 260px);
+  min-width: 0;
+  flex: 1;
+}
+
+.po-content {
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .po-main {
+    width: 100%;
+  }
+
+  .po-sidebar {
+    z-index: 101;
+  }
+
+  .po-mobile-overlay {
+    z-index: 100;
+  }
+}
+
+/* Topbar responsiveness */
+.po-topbar-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.po-topbar-right {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.po-topbar-left > div {
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .po-topbar {
+    gap: 8px;
+    padding: 12px;
+  }
+  .po-topbar-left,
+  .po-topbar-right {
+    gap: 7px;
+  }
+
+  .po-topbar h2 {
+    max-width: 125px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .po-topbar-profile {
+    display: none;
+  }
+
+  .po-menu-button,
+  .po-notification-button {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+
+/* Push notification button placement */
+
+/* Desktop: button beside the notification bell */
+.po-sidebar .enablenotifibtn {
+  display: none !important;
+}
+
+.po-topbar .mobileenablenotifibtn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  visibility: visible;
+}
+
+/* Mobile and tablet: button inside the sidebar */
+@media (max-width: 900px) {
+  .po-sidebar .enablenotifibtn {
+    display: block !important;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .po-topbar .mobileenablenotifibtn {
+    display: none !important;
+  }
+}
+
+
+/* Small mobile screens */
+@media (max-width: 600px) {
+  /* Keep the full button with text inside the mobile sidebar */
+  .po-sidebar .enablenotifibtn {
+    width: 100%;
+  }
+
+  .po-sidebar .enablenotifibtn .push-enable-wrapper {
+    width: 100%;
+  }
+
+  .po-sidebar .enablenotifibtn .push-enable-btn {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 42px;
+    padding: 10px 12px;
+    justify-content: center;
+    white-space: normal;
+  }
+
+  .po-sidebar .enablenotifibtn .push-enable-btn span {
+    display: inline;
+  }
+
+  /* Keep the desktop/topbar button compact on small screens */
+  .po-topbar .mobileenablenotifibtn .push-enable-btn {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .po-topbar .mobileenablenotifibtn .push-enable-btn span {
+    display: none;
+  }
+}
+
+/* Prevent responsive content overflow */
+
+.po-stats-grid > *,
+.po-overview-grid > *,
+.po-palace-facts > *,
+.po-form-grid > * {
+  min-width: 0;
+}
+
+.po-panel,
+.po-page-heading,
+.po-panel-heading,
+.po-status-banner,
+.po-notice {
+  min-width: 0;
+}
+
+.po-notice > span,
+.po-status-banner > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.po-search-box input {
+  min-width: 0;
+}
+
+.po-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.po-bookings-table {
+  min-width: 850px;
+}
+
+@media (max-width: 600px) {
+  .po-page-heading > .po-primary-button {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .po-panel-heading {
+    flex-wrap: wrap;
+  }
+
+  .po-bookings-heading {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .po-bookings-heading .po-outline-button {
+    flex-shrink: 0;
+  }
+
+  .po-primary-button,
+  .po-outline-button {
+    max-width: 100%;
+  }
+
+  .po-palace-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

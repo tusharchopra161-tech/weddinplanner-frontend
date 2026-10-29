@@ -1,28 +1,36 @@
-.pcard{
-    margin-left:83%;
-    padding-left:4px;
-    padding-top:8px;
-    border:2px solid #DFC9DC;
-    box-shadow:0 10px 20px 0 grey;
-    z-index:200;
-    position:fixed;
-    top:18vh
+.pcard {
+    margin-left: 83%;
+    /* padding-left:4px;
+    padding-top:8px; */
+    padding: 4px;
+    border: 2px solid #DFC9DC;
+    box-shadow: 0 10px 20px 0 grey;
+    z-index: 200;
+    position: fixed;
+    top: 18vh;
+    height: 7rem;
 }
-.logbtn{
-    position:relative;
+
+.logbtn {
+    position: relative;
     align-items: center;
     bottom: 0;
-    /* border:2px solid #DFC9DC; */
-    border-radius:4px;
+    gap:6px;;
     background-color: #C28D2E;
-    display:flex;
-    font-size: 18px;
+    display: flex;
+    justify-content: center;
     flex-shrink: 0;
-    width:5.5rem;
-    height: 2rem;
-    /* padding:2%; */
+    width: 5.5rem;
+    height: 2.3rem;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s ease;
 }
-.logbtn:hover{
- background-color:#692065 ;
- color:white
+
+.logbtn:hover {
+    background-color: #692065;
+    color: white
 }
