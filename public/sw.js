@@ -4,39 +4,61 @@ self.addEventListener("push", (event) => {
     title: "Wedding Planner",
     body: "You have a new notification.",
     url: "/",
+    tag: "wedding-planner-notification",
+    type: "general",
   };
 
   if (event.data) {
     try {
-      data = {
-        ...data,
-        ...event.data.json(),
-      };
+      data = { ...data, ...event.data.json() };
     } catch (error) {
       data.body = event.data.text();
     }
   }
 
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      tag: data.tag || "wedding-planner-notification",
-      data: {
-        url: data.url || "/",
+  const options = {
+    body: data.body || "You have a new notification.",
+    icon: "/android-chrome-192x192 (2).png",
+    badge: "/favicon-32x32 (2).png",
+    tag: data.tag || "wedding-planner-notification",
+    renotify: false,
+    timestamp: Date.now(),
+    data: {
+      url: data.url || "/",
+      type: data.type || "general",
+      bookingId: data.bookingId || null,
+      palaceId: data.palaceId || null,
+    },
+    actions: [
+      {
+        action: "view",
+        title: "View details",
       },
-    })
+      {
+        action: "dismiss",
+        title: "Dismiss",
+      },
+    ],
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Wedding Planner", options)
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
+  if (event.action === "dismiss") {
+    return;
+  }
+
   const targetUrl = new URL(
     event.notification.data?.url || "/",
     self.location.origin
   );
 
-  // Only allow navigation within this website.
+  // Only navigate within the Wedding Planner website.
   if (targetUrl.origin !== self.location.origin) {
     return;
   }

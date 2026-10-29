@@ -320,10 +320,13 @@ export const Nav = () => {
       <div className={`nav-bottom ${isMenuOpen ? "menu-open" : ""} ${!user ? "nav-bottom-guest" : "nav-bottom-logged-in"} `}>
         <div className="nav-logo">
           <div className="nav-logo-img">
-            <img
-              src="https://th.bing.com/th/id/OIP.TxNT0VObjzkCq9Q5UWUBPAHaHa?w=173&h=180&c=7&r=0&o=7&cb=iwp2&dpr=1.4&pid=1.7&rm=3"
+            <button onClick={()=>navigate("/")}>
+              <img
+              src="../android-chrome-512x512 (2).png"
               alt="WeddingPlanner logo"
             />
+            </button>
+            
           </div>
 
           <div className="nav-logo-text">
