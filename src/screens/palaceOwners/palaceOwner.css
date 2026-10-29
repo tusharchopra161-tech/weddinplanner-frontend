@@ -1646,10 +1646,11 @@
 .po-logout-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   width: 100%;
   min-height: 44px;
-  padding: 11px 14px;
+  padding: 11px 45px;
   margin-top: 14px;
   border: 1px solid #efd8d8;
   border-radius: 11px;

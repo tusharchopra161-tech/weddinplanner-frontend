@@ -182,4 +182,4 @@ export async function disablePushNotifications() {
 }
 
 // Backward compatibility with your existing admin component/import.
-export const enableAdminPushNotifications = enablePushNotifications;
+// export const enableAdminPushNotifications = enablePushNotifications;

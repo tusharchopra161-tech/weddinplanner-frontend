@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoNotificationsOutline } from "react-icons/io5";
-import { enableAdminPushNotifications } from "../../utils/pushNotifications";
+import { enablePushNotifications } from "../../utils/pushNotifications";
 import "./EnablePushNotification.css";
 
 export const EnablePushNotification = () => {
@@ -14,7 +14,7 @@ export const EnablePushNotification = () => {
     setSuccess(false);
 
     try {
-      await enableAdminPushNotifications();
+      await enablePushNotifications();
       setSuccess(true);
       setMessage("Notifications enabled");
     } catch (error) {
