@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "./admindashboard.css";
 import { EnablePushNotification } from "../EnablePushNotification";
+import { FiLogOut } from "react-icons/fi";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [palaces, setPalaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -187,8 +188,16 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="admin-layout">
+    <div className={`admin-layout ${isSidebarOpen ? "sidebar-open" : ""}`}>
       <aside className="admin-sidebar">
+        <button
+          type="button"
+          className="admin-mobile-close"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-label="Close sidebar"
+        >
+          ×
+        </button>
         <div className="admin-brand">
           <div className="admin-brand-icon">W</div>
           <div>
@@ -240,13 +249,29 @@ const AdminDashboard = () => {
             className="admin-logout"
             onClick={handleLogout}
           >
-            <span>↪</span> Logout
+            <FiLogOut/> Logout
           </button>
         </div>
       </aside>
-
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="admin-sidebar-overlay"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-label="Close navigation menu"
+        />
+      )}
       <main className="admin-main">
         <header className="admin-topbar">
+          <button
+            type="button"
+            className="admin-hamburger"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open admin menu"
+            aria-expanded={isSidebarOpen}
+          >
+            ☰
+          </button>
           <div>
             <p className="admin-breadcrumb">Workspace / Admin</p>
             <h2>{activePage}</h2>

@@ -1639,3 +1639,46 @@
     max-height: 40vh;
   }
 }
+.po-sidebar::-webkit-scrollbar{
+  display:none
+}
+/* Palace Owner Logout */
+.po-logout-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 14px;
+  margin-top: 14px;
+  border: 1px solid #efd8d8;
+  border-radius: 11px;
+  background: #fff5f3;
+  color: #b54141;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.po-logout-button span{
+  color:#b54141!important;
+  text-decoration: none;
+}
+.po-logout-button:hover {
+  background: #ffe9e6;
+  color: #922f2f ;
+}
+.po-logout-button:hover span{
+  color: #922f2f !important;
+}
+
+.po-logout-button span:first-child {
+  font-size: 19px;
+  line-height: 1;
+}
+.po-logout-icon {
+  color: #b54141 !important;
+  font-size: 18px;
+  flex-shrink: 0;
+}

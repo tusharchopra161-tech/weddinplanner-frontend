@@ -317,7 +317,7 @@ export const Nav = () => {
         Make your forever unforgettable
       </div>
 
-      <div className={`nav-bottom ${isMenuOpen ? "menu-open" : ""}`}>
+      <div className={`nav-bottom ${isMenuOpen ? "menu-open" : ""} ${!user ? "nav-bottom-guest" : "nav-bottom-logged-in"} `}>
         <div className="nav-logo">
           <div className="nav-logo-img">
             <img

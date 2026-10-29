@@ -10,11 +10,17 @@
 }
 .logbtn{
     position:relative;
+    align-items: center;
     bottom: 0;
     /* border:2px solid #DFC9DC; */
     border-radius:4px;
     background-color: #C28D2E;
-
+    display:flex;
+    font-size: 18px;
+    flex-shrink: 0;
+    width:5.5rem;
+    height: 2rem;
+    /* padding:2%; */
 }
 .logbtn:hover{
  background-color:#692065 ;

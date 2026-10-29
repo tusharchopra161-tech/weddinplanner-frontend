@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import './profilecard.css'
+import { FiLogOut } from "react-icons/fi";
+
 export const ProfileCard = (props) => {
  const handlelog=()=>{
   // console.log(props)
@@ -15,8 +17,8 @@ export const ProfileCard = (props) => {
         <p className='pemail text-[#654E63] text-[2.5vh]'>{props.user.email}</p>
       </div>
       
-      <div>
-        <button onClick={handlelog} className='logbtn text-[#692065] font-semibold text-xl justify-start w-[40%]'>Log Out</button>
+      <div >
+        <button onClick={handlelog} className='logbtn text-[#692065] font-semibold text-xl justify-start w-[40%]'><FiLogOut/>Log Out</button>
       </div>
     </div>
 

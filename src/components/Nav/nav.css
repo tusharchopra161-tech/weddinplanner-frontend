@@ -878,3 +878,15 @@
         max-width: calc(100vw - 1.2rem);
     }
 }
+/* Computer screen only */
+@media (min-width: 1201px) {
+  .nav-bottom.nav-bottom-guest {
+    padding-right: 1.5rem;
+  }
+}
+.nav-bottom.nav-bottom-guest {
+    padding-right: 19.5rem;
+}
+.nav-bottom.nav-bottom-logged-in {
+    padding-right: 0.5rem;
+  }

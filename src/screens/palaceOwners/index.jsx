@@ -1,13 +1,7 @@
 
 import { useEffect, useState, useRef } from "react";
-import {
-  RiBankLine,
-} from "react-icons/ri";
-import {
-  MdOutlineDashboard,
-  MdOutlinePhotoSizeSelectActual,
-  MdOutlinePayment,
-} from "react-icons/md";
+import { RiBankLine, } from "react-icons/ri";
+import { MdOutlineDashboard, MdOutlinePhotoSizeSelectActual, MdOutlinePayment, } from "react-icons/md";
 import { SlCalender } from "react-icons/sl";
 import { IoSettingsOutline } from "react-icons/io5";
 import { LuCalendarCheck } from "react-icons/lu";
@@ -28,8 +22,9 @@ import {
 import { io } from "socket.io-client";
 import { VenueCreation } from "../../components/VenueCreation";
 import "./palaceOwner.css"
-import { useLocation } from "react-router-dom";
 import { AvailabilityDates } from "../../components/AvailabilityDates";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FiLogOut } from "react-icons/fi";
 
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
@@ -68,10 +63,9 @@ const getInitials = (name = "") => {
 };
 const getNotificationId = (notification) =>
   notification.id ||
-  `${notification.type || "notification"}-${
-    notification.bookingId ||
-    notification.booking?._id ||
-    `${Date.now()}-${Math.random()}`
+  `${notification.type || "notification"}-${notification.bookingId ||
+  notification.booking?._id ||
+  `${Date.now()}-${Math.random()}`
   }`;
 const getDateKey = (value) => {
   const date = new Date(value);
@@ -82,6 +76,13 @@ const getDateKey = (value) => {
 };
 export const PalaceOwners = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
+    setMobileMenu(false);
+    navigate("/login", { replace: true });
+  };
   const [activeTab, setActiveTab] = useState("Overview");
   const [bookings, setBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
@@ -757,6 +758,14 @@ export const PalaceOwners = () => {
               <IoSettingsOutline />
             </button>
           </div>
+          <button
+            type="button"
+            className="po-logout-button"
+            onClick={handleLogout}
+          >
+            <FiLogOut className="po-logout-icon" />
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
