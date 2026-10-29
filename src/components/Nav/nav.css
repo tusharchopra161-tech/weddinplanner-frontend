@@ -906,8 +906,10 @@
     }
 }
 
-.nav-bottom.nav-bottom-guest {
-    padding-right: 19.5rem;
+@media (min-width: 1201px) {
+    .nav-bottom.nav-bottom-guest {
+        padding-right: 1.5rem;
+    }
 }
 
 .nav-bottom.nav-bottom-logged-in {
