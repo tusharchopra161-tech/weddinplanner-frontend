@@ -215,7 +215,7 @@ export const LocationPicker = ({
                             coordinates.latitude,
                             coordinates.longitude,
                         ]}
-                        zoom={17}
+                        zoom={20}
                         scrollWheelZoom
                         className="location-map"
 

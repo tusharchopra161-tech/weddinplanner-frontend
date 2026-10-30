@@ -94,7 +94,7 @@ const MapUpdater = ({ position, destination, routeCoordinates }) => {
         if (!hasFittedInitialBounds.current) {
             map.fitBounds([position, destination], {
                 padding: [45, 45],
-                maxZoom: 14
+                maxZoom: 19
             });
 
             hasFittedInitialBounds.current = true;
@@ -110,7 +110,7 @@ const MapUpdater = ({ position, destination, routeCoordinates }) => {
 
             map.fitBounds(bounds, {
                 padding: [45, 45],
-                maxZoom: 14
+                maxZoom: 19
             });
 
             hasFittedRoute.current = true;
@@ -1142,7 +1142,7 @@ export const PalaceDetails = () => {
                                                     currentPosition.latitude,
                                                     currentPosition.longitude
                                                 ]}
-                                                zoom={13}
+                                                zoom={18}
                                                 scrollWheelZoom={true}
                                                 style={{ height: '100%', width: '100%' }}
                                             >
