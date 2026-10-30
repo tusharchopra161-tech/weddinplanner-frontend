@@ -196,21 +196,27 @@ export const PalaceDetails = () => {
         const handleDeviceOrientation = (event) => {
             let heading = null;
 
-            // iPhone Safari compass heading.
+            // iPhone Safari
             if (typeof event.webkitCompassHeading === 'number') {
                 heading = event.webkitCompassHeading;
             }
-            // Android and other supported browsers.
-            else if (typeof event.alpha === 'number') {
+
+            // Android devices
+            else if (
+                typeof event.alpha === 'number' &&
+                event.absolute === true
+            ) {
+                heading = (360 - event.alpha) % 360;
+            }
+
+            if (heading !== null) {
                 const screenAngle =
                     window.screen?.orientation?.angle ??
                     window.orientation ??
                     0;
 
-                heading = (360 - event.alpha + screenAngle) % 360;
-            }
+                heading = (heading + screenAngle + 360) % 360;
 
-            if (heading !== null) {
                 setCompassHeading(Math.round(heading));
             }
         };

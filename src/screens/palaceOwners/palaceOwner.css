@@ -107,11 +107,14 @@
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  overflow: hidden;
   color: white;
   background: var(--po-primary);
   font-size: 23px;
 }
-
+.po-brand-icon img{
+  border-radius: 10px;
+}
 .po-brand strong,
 .po-brand span {
   display: block;
