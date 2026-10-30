@@ -7,6 +7,7 @@ import {
     TileLayer,
     CircleMarker,
     Polyline,
+    Marker,
     useMap,
     AttributionControl
 } from 'react-leaflet';
@@ -78,21 +79,43 @@ const formatDuration = (seconds) => {
 
 const MapUpdater = ({ position, destination, routeCoordinates }) => {
     const map = useMap();
+    const hasFittedInitialBounds = useRef(false);
+    const hasFittedRoute = useRef(false);
+
+    const destinationLat = destination?.[0];
+    const destinationLng = destination?.[1];
 
     useEffect(() => {
-        if (position && destination) {
-            const points = [
-                position,
-                destination,
-                ...routeCoordinates
-            ];
-
-            map.fitBounds(points, {
-                padding: [35, 35],
-                maxZoom: 15
-            });
+        if (!position || destinationLat == null || destinationLng == null) {
+            return;
         }
-    }, [map, position, destination, routeCoordinates]);
+
+        // Initially show both the current location and destination.
+        if (!hasFittedInitialBounds.current) {
+            map.fitBounds([position, destination], {
+                padding: [45, 45],
+                maxZoom: 14
+            });
+
+            hasFittedInitialBounds.current = true;
+        }
+
+        // Once the driving route arrives, fit the complete route once.
+        if (routeCoordinates?.length > 1 && !hasFittedRoute.current) {
+            const bounds = L.latLngBounds([position, destination]);
+
+            routeCoordinates.forEach((point) => {
+                bounds.extend(point);
+            });
+
+            map.fitBounds(bounds, {
+                padding: [45, 45],
+                maxZoom: 14
+            });
+
+            hasFittedRoute.current = true;
+        }
+    }, [map, destinationLat, destinationLng, routeCoordinates]);
 
     return null;
 };
@@ -118,6 +141,8 @@ export const PalaceDetails = () => {
     const [routeLoading, setRouteLoading] = useState(false);
     const [routeError, setRouteError] = useState('');
     const [arrivalMessage, setArrivalMessage] = useState('');
+    const [compassHeading, setCompassHeading] = useState(null);
+    const [compassEnabled, setCompassEnabled] = useState(false);
     const arrivalCountRef = useRef(0);
     const routeRequestRef = useRef({
         time: 0,
@@ -163,7 +188,47 @@ export const PalaceDetails = () => {
 
         fetchPalace();
     }, [palaceId]);
+    useEffect(() => {
+        if (!compassEnabled || journeyStatus !== 'tracking') {
+            return;
+        }
 
+        const handleDeviceOrientation = (event) => {
+            let heading = null;
+
+            // iPhone Safari compass heading.
+            if (typeof event.webkitCompassHeading === 'number') {
+                heading = event.webkitCompassHeading;
+            }
+            // Android and other supported browsers.
+            else if (typeof event.alpha === 'number') {
+                const screenAngle =
+                    window.screen?.orientation?.angle ??
+                    window.orientation ??
+                    0;
+
+                heading = (360 - event.alpha + screenAngle) % 360;
+            }
+
+            if (heading !== null) {
+                setCompassHeading(Math.round(heading));
+            }
+        };
+
+        window.addEventListener(
+            'deviceorientation',
+            handleDeviceOrientation,
+            true
+        );
+
+        return () => {
+            window.removeEventListener(
+                'deviceorientation',
+                handleDeviceOrientation,
+                true
+            );
+        };
+    }, [compassEnabled, journeyStatus]);
     const images = Array.isArray(palace?.Images)
         ? palace.Images.map((item) =>
             typeof item === 'string' ? item : item?.url
@@ -367,8 +432,26 @@ export const PalaceDetails = () => {
             );
         }
     };
+    const requestCompassPermission = async () => {
+        const OrientationEvent = window.DeviceOrientationEvent;
 
-    const startJourney = () => {
+        if (
+            OrientationEvent &&
+            typeof OrientationEvent.requestPermission === 'function'
+        ) {
+            try {
+                const permission = await OrientationEvent.requestPermission();
+                setCompassEnabled(permission === 'granted');
+            } catch (error) {
+                console.error('Compass permission error:', error);
+                setCompassEnabled(false);
+            }
+        } else {
+            // Browsers that do not require an explicit permission request.
+            setCompassEnabled(true);
+        }
+    };
+    const startJourney = async () => {
         setGpsError('');
         setArrivalMessage('');
         setRouteCoordinates([]);
@@ -428,7 +511,8 @@ export const PalaceDetails = () => {
         setJourneyStatus('starting');
 
         setJourneyStatus('starting');
-
+        setCompassHeading(null);
+        await requestCompassPermission();
         watchIdRef.current = navigator.geolocation.watchPosition(
             (position) => {
                 const latitude = position.coords.latitude;
@@ -1064,19 +1148,59 @@ export const PalaceDetails = () => {
                                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                                 />
 
-                                                <CircleMarker
-                                                    center={[
-                                                        currentPosition.latitude,
-                                                        currentPosition.longitude
-                                                    ]}
-                                                    radius={9}
-                                                    pathOptions={{
-                                                        color: '#ffffff',
-                                                        fillColor: '#2563eb',
-                                                        fillOpacity: 1,
-                                                        weight: 3
-                                                    }}
-                                                />
+                                                {compassHeading !== null ? (
+                                                    <Marker
+                                                        position={[
+                                                            currentPosition.latitude,
+                                                            currentPosition.longitude
+                                                        ]}
+                                                        icon={L.divIcon({
+                                                            className: '',
+                                                            html: `
+                                                            <div style="
+                                                                width: 40px;
+                                                                height: 40px;
+                                                                display: flex;
+                                                                align-items: center;
+                                                                justify-content: center;
+                                                                transform: rotate(${compassHeading}deg);
+                                                                filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+                                                                ">
+                                                                    <svg
+                                                                        width="36"
+                                                                        height="36"
+                                                                        viewBox="0 0 40 40"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M20 2 L35 36 L20 28 L5 36 Z"
+                                                                            fill="#2563eb"
+                                                                            stroke="white"
+                                                                            stroke-width="2"
+                                                                            stroke-linejoin="round"
+                                                                        />
+                                                                    </svg>
+                                                            </div>
+                                                                `,
+                                                            iconSize: [40, 40],
+                                                            iconAnchor: [20, 20]
+                                                        })}
+                                                    />
+                                                ) : (
+                                                    <CircleMarker
+                                                        center={[
+                                                            currentPosition.latitude,
+                                                            currentPosition.longitude
+                                                        ]}
+                                                        radius={9}
+                                                        pathOptions={{
+                                                            color: '#ffffff',
+                                                            fillColor: '#2563eb',
+                                                            fillOpacity: 1,
+                                                            weight: 3
+                                                        }}
+                                                    />
+                                                )}
 
                                                 <CircleMarker
                                                     center={[
