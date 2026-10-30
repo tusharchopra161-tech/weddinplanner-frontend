@@ -576,15 +576,23 @@ export const PalaceDetails = () => {
 
             },
             (error) => {
+                if (error.code === 3) {
+                    setGpsError(
+                        'GPS is taking longer than expected. Keep location enabled and wait while we try again.'
+                    );
+
+                    setJourneyStatus('starting');
+                    return;
+                }
+
                 const messages = {
                     1: 'Location permission denied. Please allow location access in your browser.',
-                    2: 'Your current location is unavailable. Please try again.',
-                    3: 'Getting your location timed out. Please try again.'
+                    2: 'Your current location is unavailable. Please try again.'
                 };
-
-                setGpsError(messages[error.code] || 'Unable to access your location.');
+                setGpsError(
+                    messages[error.code] || 'Unable to access your location.'
+                );
                 setJourneyStatus('error');
-
                 if (watchIdRef.current !== null) {
                     navigator.geolocation.clearWatch(watchIdRef.current);
                     watchIdRef.current = null;
@@ -592,7 +600,7 @@ export const PalaceDetails = () => {
             },
             {
                 enableHighAccuracy: true,
-                maximumAge: 0,
+                maximumAge: 10000,
                 timeout: 3000
             }
         );
