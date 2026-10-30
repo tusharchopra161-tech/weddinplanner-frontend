@@ -1,5 +1,11 @@
 import React from 'react'
 import { useState, useRef } from 'react'
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 export const ReviewPublish = ({
   formData,
   onBack,
@@ -13,12 +19,22 @@ export const ReviewPublish = ({
   const publishingRef = useRef(false);
   const images = formData.Images || [];
   const facilities = formData.facilities || [];
+  const coordinates = formData.coordinates;
 
+  const hasValidCoordinates =
+    coordinates &&
+    Number.isFinite(Number(coordinates.latitude)) &&
+    Number.isFinite(Number(coordinates.longitude)) &&
+    Number(coordinates.latitude) >= -90 &&
+    Number(coordinates.latitude) <= 90 &&
+    Number(coordinates.longitude) >= -180 &&
+    Number(coordinates.longitude) <= 180;
   const validateAndPublish = async () => {
     if (publishingRef.current) return;
     if (
       !formData.name.trim() ||
       !formData.location.trim() ||
+      !hasValidCoordinates ||
       formData.price === "" ||
       !Number.isFinite(Number(formData.price)) ||
       Number(formData.price) < 0 ||
@@ -26,6 +42,7 @@ export const ReviewPublish = ({
       !Number.isInteger(Number(formData.capacity)) ||
       Number(formData.capacity) < 1 ||
       !formData.description.trim()
+
     ) {
       setError("Please complete all required venue details first.");
       onEditStep(0);
@@ -128,7 +145,76 @@ export const ReviewPublish = ({
           <div className="venue-review-description">
             <small>Description</small>
             <p>{formData.description || "No description provided."}</p>
+
           </div>
+        </div>
+        <div className="venue-review-location">
+          <div className="venue-review-location-heading">
+            <div>
+              <small>Palace destination</small>
+              <strong>
+                {formData.location || "Location not selected"}
+              </strong>
+            </div>
+
+            <span className="venue-location-status">
+              {hasValidCoordinates ? "✓ Location selected" : "Location required"}
+            </span>
+          </div>
+
+          {hasValidCoordinates ? (
+            <>
+              <div className="venue-review-coordinates">
+                <span>
+                  Latitude: {Number(coordinates.latitude).toFixed(6)}
+                </span>
+
+                <span>
+                  Longitude: {Number(coordinates.longitude).toFixed(6)}
+                </span>
+              </div>
+
+              <div className="venue-review-map">
+                <MapContainer
+                  center={[
+                    Number(coordinates.latitude),
+                    Number(coordinates.longitude),
+                  ]}
+                  zoom={16}
+                  scrollWheelZoom={false}
+                  dragging={false}
+                  doubleClickZoom={false}
+                  touchZoom={false}
+                  keyboard={false}
+                  zoomControl={false}
+                  className="venue-review-map-container"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+
+                  <CircleMarker
+                    center={[
+                      Number(coordinates.latitude),
+                      Number(coordinates.longitude),
+                    ]}
+                    radius={9}
+                    pathOptions={{
+                      color: "#ffffff",
+                      weight: 3,
+                      fillColor: "#692065",
+                      fillOpacity: 1,
+                    }}
+                  />
+                </MapContainer>
+              </div>
+            </>
+          ) : (
+            <p className="venue-review-muted">
+              Please select the exact palace location on the map.
+            </p>
+          )}
         </div>
       </section>
 

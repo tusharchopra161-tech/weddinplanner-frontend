@@ -17,17 +17,18 @@ export const FilterSection = () => {
             try {
                 const response = await fetch(
                     'https://weddingplanner-backend.onrender.com/palace'
+                    // ||"https://weddingplannerbackend-vaq7.onrender.com/palace"
                 );
 
                 const data = await response.json();
-
+                // console.log(data)
                 if (!response.ok || !data.success) {
                     throw new Error(
                         data.message || 'Failed to fetch palaces'
                     );
                 }
-
                 setPalaces(data.palace || data.palaces || []);
+                console.log(palaces)
                 
             } catch (err) {
                 console.error('Fetch palaces error:', err);
@@ -215,6 +216,7 @@ export const FilterSection = () => {
                 {!loading && !error && (
                     <div className="palace-cards-grid">
                         {filteredPalaces.map((palace) => (
+                            
                             <FilCards
                                 key={palace._id}
                                 palaceId={palace._id}

@@ -16,6 +16,7 @@ const steps = [
 const initialForm = {
   name: "",
   location: "",
+  coordinates: null,
   price: "",
   capacity: "",
   description: "",
@@ -38,6 +39,11 @@ export const VenueCreation = () => {
   const detailsFields = [
     venueForm.name.trim(),
     venueForm.location.trim(),
+    Boolean(
+      venueForm.coordinates &&
+      Number.isFinite(Number(venueForm.coordinates.latitude)) &&
+      Number.isFinite(Number(venueForm.coordinates.longitude))
+    ),
     venueForm.price !== "" &&
     Number(venueForm.price) >= 0,
     venueForm.capacity !== "" &&
@@ -50,7 +56,7 @@ export const VenueCreation = () => {
 
   // Five details fields + five required photos + one or more amenities.
   // Later steps will contribute to this same overall progress indicator.
-  const totalRequired = 11;
+  const totalRequired = 12;
   const completedCount =
     completedDetails +
     Math.min(venueForm.Images.length, 5) +
@@ -96,7 +102,7 @@ export const VenueCreation = () => {
     formData.append("capacity", venueForm.capacity);
     formData.append("facilities", JSON.stringify(venueForm.facilities));
     formData.append("isAvailable", "true");
-
+    formData.append("coordinates", JSON.stringify(venueForm.coordinates));
     venueForm.Images.forEach((image) => {
       if (image.file) {
         formData.append("Images", image.file);
@@ -332,10 +338,10 @@ export const VenueCreation = () => {
                 <h3>Quick checklist</h3>
                 {[
                   ["Venue name added", Boolean(venueForm.name.trim())],
-                  ["Location selected", Boolean(venueForm.location.trim())],
+                  ["Location selected",Boolean(venueForm.location.trim() && venueForm.coordinates),],
                   [
                     "Capacity specified",
-                    venueForm.capacity !== "" && Number(venueForm.capacity) >= 1,
+                    venueForm.capacity !== "" && Number(venueForm.capacity) >= 100,
                   ],
                   ["Add at least 5 photos", venueForm.Images.length >= 5],
                 ].map(([label, done]) => (

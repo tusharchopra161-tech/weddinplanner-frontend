@@ -225,8 +225,12 @@
 .nav-overlay {
     display: none;
 }
-
 /* Laptop */
+/* @media (min-width:1201px){
+    .nav-bottom.nav-bottom-guest{
+    padding-right:30rem;
+}
+} */
 @media (max-width: 1200px) {
     .nav-bottom {
         padding: 0.5rem 0.7rem;
@@ -900,15 +904,15 @@
     }
 }
 /* Computer screen only */
-@media (min-width: 1201px) {
+/* @media (min-width: 1201px) {
     .nav-bottom.nav-bottom-guest {
         padding-right: 1.5rem;
     }
-}
+} */
 
 @media (min-width: 1201px) {
     .nav-bottom.nav-bottom-guest {
-        padding-right: 1.5rem;
+        padding-right: 30rem;
     }
 }
 

@@ -1,17 +1,20 @@
 import React from 'react'
-
-export const VenueDetails = ({formData, updateForm, onBack, onContinue, completedDetails})=>{
+import { LocationPicker } from './LocationPicker';
+export const VenueDetails = ({ formData, updateForm, onBack, onContinue, completedDetails }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
     const valid =
       formData.name.trim() &&
       formData.location.trim() &&
+      formData.coordinates &&
+      Number.isFinite(Number(formData.coordinates.latitude)) &&
+      Number.isFinite(Number(formData.coordinates.longitude)) &&
       formData.price !== "" &&
       Number(formData.price) >= 0 &&
       formData.capacity !== "" &&
       Number.isInteger(Number(formData.capacity)) &&
-      Number(formData.capacity) >= 1 &&
+      Number(formData.capacity) >= 100 &&
       formData.description.trim();
 
     if (!valid) return;
@@ -29,7 +32,7 @@ export const VenueDetails = ({formData, updateForm, onBack, onContinue, complete
         </div>
 
         <span className="venue-field-count">
-          {completedDetails}/5 completed
+          {completedDetails}/6 completed
         </span>
       </div>
 
@@ -58,13 +61,15 @@ export const VenueDetails = ({formData, updateForm, onBack, onContinue, complete
         </label>
 
         <label className="venue-field venue-field-full">
-          <span>Location <b>*</b></span>
-          <input
-            type="text"
-            placeholder="City, state or full address"
-            value={formData.location}
-            onChange={(e) => updateForm("location", e.target.value)}
-            required
+          <LocationPicker
+            address={formData.location}
+            coordinates={formData.coordinates}
+            onAddressChange={(value) =>
+              updateForm("location", value)
+            }
+            onCoordinatesChange={(value) =>
+              updateForm("coordinates", value)
+            }
           />
         </label>
 
@@ -72,7 +77,7 @@ export const VenueDetails = ({formData, updateForm, onBack, onContinue, complete
           <span>Guest capacity <b>*</b></span>
           <input
             type="number"
-            min="1"
+            min="100"
             step="1"
             placeholder="500 guests"
             value={formData.capacity}

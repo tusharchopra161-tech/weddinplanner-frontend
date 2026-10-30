@@ -1,0 +1,111 @@
+.location-picker {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.location-search-btn {
+  align-self: flex-start;
+}
+
+.location-map-help {
+  margin: 0;
+  color: #654e63;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.location-map-container {
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #eadcc8;
+}
+
+.location-map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.location-error {
+  color: #c0392b;
+  font-size: 13px;
+  margin: 0;
+}
+
+.location-coordinates {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  background: #fcf6e9;
+  border: 1px solid #eadcc8;
+  border-radius: 10px;
+  color: #654e63;
+  font-size: 13px;
+}
+
+.location-coordinates strong {
+  color: #692065;
+  margin-bottom: 3px;
+}
+
+.palace-map-marker {
+  background: transparent;
+  border: none;
+}
+
+.palace-marker-pin {
+  width: 20px;
+  height: 20px;
+  background: #692065;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.location-loading {
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1px dashed #eadcc8;
+  border-radius: 12px;
+  color: #654e63;
+  font-size: 14px;
+  text-align: center;
+}
+/* Custom map branding */
+.leaflet-control-attribution {
+  background: rgba(255, 253, 248, 0.9) !important;
+  color: #654e63 !important;
+  padding: 5px 9px !important;
+  border-radius: 8px 0 0 0;
+  font-size: 10px !important;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-control-attribution a {
+  color: #692065 !important;
+  text-decoration: none;
+  font-weight: 600;
+}
+.leaflet-control-attribution {
+  background: rgba(255, 253, 248, 0.92) !important;
+  color: #692065 !important;
+  padding: 5px 9px !important;
+  border-radius: 8px 0 0 0;
+  font-size: 10px !important;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.leaflet-control-attribution a {
+  color: #654e63 !important;
+}
