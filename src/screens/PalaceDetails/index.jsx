@@ -398,7 +398,7 @@ export const PalaceDetails = () => {
     const sendArrivalNotification = async (journeyId) => {
         try {
             const token = localStorage.getItem('token');
-
+            console.log("Arrival API called");
             const response = await fetch(`${API_URL}/journey-arrival`, {
                 method: 'POST',
                 headers: {
@@ -413,6 +413,7 @@ export const PalaceDetails = () => {
 
             const data = await response.json();
 
+            console.log("Arrival API response:", response.status, data);
             if (!response.ok) {
                 throw new Error(
                     data.message || 'Unable to send arrival notification.'
@@ -541,14 +542,17 @@ export const PalaceDetails = () => {
                     destinationLatitude,
                     destinationLongitude
                 );
+                console.log("GPS CHECK", { distance, accuracy, arrivalCount: arrivalCountRef.current })
                 // Require two consecutive GPS readings within 1 metre.
-                if (accuracy <= 8 && distance <= 1) {
+                if (accuracy <= 25 && distance <= 10) {
                     arrivalCountRef.current += 1;
                 } else {
                     arrivalCountRef.current = 0;
                 }
 
-                if (arrivalCountRef.current >= 2 && !arrivalRequestSentRef.current) {
+                if (arrivalCountRef.current >= 2) {
+                    console.log("DESTINATION REACHED!");
+                    console.log("SENDING ARRIVAL REQUEST:", journeyIdRef.current);
                     // Prevent duplicate arrival requests.
                     arrivalRequestSentRef.current = true;
 
