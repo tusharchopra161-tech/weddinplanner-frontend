@@ -203,9 +203,7 @@ export const PalaceDetails = () => {
 
             // Android devices
             else if (
-                typeof event.alpha === 'number' &&
-                event.absolute === true
-            ) {
+                typeof event.alpha === 'number') {
                 heading = (360 - event.alpha) % 360;
             }
 
