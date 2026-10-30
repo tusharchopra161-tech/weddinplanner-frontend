@@ -544,7 +544,7 @@ export const PalaceDetails = () => {
                 );
                 console.log("GPS CHECK", { distance, accuracy, arrivalCount: arrivalCountRef.current })
                 // Require two consecutive GPS readings within 1 metre.
-                if (accuracy <= 25 && distance <= 10) {
+                if (accuracy <= 250 && distance <= 100) {
                     arrivalCountRef.current += 1;
                 } else {
                     arrivalCountRef.current = 0;
@@ -593,7 +593,7 @@ export const PalaceDetails = () => {
             {
                 enableHighAccuracy: true,
                 maximumAge: 0,
-                timeout: 15000
+                timeout: 3000
             }
         );
     };
