@@ -4,9 +4,110 @@ import { io } from "socket.io-client";
 import "./admindashboard.css";
 import { EnablePushNotification } from "../EnablePushNotification";
 import { FiLogOut } from "react-icons/fi";
-
+import {MapContainer,TileLayer,CircleMarker,Popup,AttributionControl} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 const API_URL = "https://weddingplanner-backend.onrender.com";
 
+const AdminPalaceLocation = ({ palace }) => {
+  const latitude = Number(palace.coordinates?.latitude);
+  const longitude = Number(palace.coordinates?.longitude);
+
+  const hasValidCoordinates =
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180;
+
+  if (!hasValidCoordinates) {
+    return (
+      <div className="admin-location-verification">
+        <h4>⌖ Location Verification</h4>
+
+        <div className="admin-location-missing">
+          <span>⚠</span>
+          <div>
+            <strong>Location coordinates unavailable</strong>
+            <p>The owner has not submitted valid GPS coordinates.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const googleMapsUrl =
+    `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+  return (
+    <div className="admin-location-verification">
+      <div className="admin-location-heading">
+        <div>
+          <h4>⌖ Location Verification</h4>
+          <p>Inspect the submitted palace location.</p>
+        </div>
+
+        <span className="admin-location-status">
+          Location submitted
+        </span>
+      </div>
+
+      <div className="admin-coordinate-details">
+        <div>
+          <span>Latitude</span>
+          <strong>{latitude.toFixed(6)}</strong>
+        </div>
+
+        <div>
+          <span>Longitude</span>
+          <strong>{longitude.toFixed(6)}</strong>
+        </div>
+      </div>
+
+      <div className="admin-verification-map">
+        <MapContainer
+          key={palace._id}
+          center={[latitude, longitude]}
+          zoom={16}
+          attributionControl={false}
+          scrollWheelZoom={false}
+          style={{ height: "260px", width: "100%" }}
+        >
+          <AttributionControl prefix="The Chopra's Map Company" position="bottomright" />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+
+          <CircleMarker
+            center={[latitude, longitude]}
+            radius={10}
+            pathOptions={{
+              color: "#692065",
+              fillColor: "#C28D2E",
+              fillOpacity: 0.9,
+            }}
+          >
+            <Popup>
+              <strong>{palace.name}</strong>
+              <br />
+              Submitted palace location
+            </Popup>
+          </CircleMarker>
+        </MapContainer>
+      </div>
+
+      <a
+        href={googleMapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="admin-google-map-link"
+      >
+        Open in Google Maps ↗
+      </a>
+    </div>
+  );
+};
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -199,9 +300,9 @@ const AdminDashboard = () => {
           ×
         </button>
         <div className="admin-brand">
-          <div className="admin-brand-icon">W</div>
+          <div className="admin-brand-icon"><img src="../android-chrome-512x512 (2).png"></img></div>
           <div>
-            <h2>Wedora</h2>
+            <h2>W/P</h2>
             <span>ADMIN PANEL</span>
           </div>
         </div>
@@ -532,7 +633,7 @@ const AdminDashboard = () => {
                       <p className="admin-palace-location">
                         <span>⌖</span> {palace.location}
                       </p>
-
+                      <AdminPalaceLocation palace={palace} />
                       <p className="admin-palace-description">
                         {palace.description || "No description provided."}
                       </p>

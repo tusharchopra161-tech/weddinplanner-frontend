@@ -46,6 +46,8 @@
   color: white;
   font-family: Georgia, serif;
   font-size: 27px;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .admin-brand h2 {
@@ -1322,4 +1324,126 @@
     font-size: 23px;
     cursor: pointer;
   }
+}
+/* Palace Location Verification */
+
+.admin-location-verification {
+  margin: 18px 0;
+  padding: 15px;
+  border: 1px solid #EADCC8;
+  border-radius: 12px;
+  background: #FCF6E9;
+}
+
+.admin-location-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.admin-location-heading h4,
+.admin-location-verification > h4 {
+  margin: 0;
+  color: #692065;
+  font-size: 15px;
+}
+
+.admin-location-heading p {
+  margin: 5px 0 0;
+  color: #654E63;
+  font-size: 12px;
+}
+
+.admin-location-status {
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #eee4f0;
+  color: #692065;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-coordinate-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.admin-coordinate-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px;
+  border-radius: 8px;
+  background: #FFFDF8;
+  border: 1px solid #EADCC8;
+  min-width: 0;
+}
+
+.admin-coordinate-details span {
+  color: #654E63;
+  font-size: 11px;
+}
+
+.admin-coordinate-details strong {
+  color: #692065;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.admin-verification-map {
+  width: 100%;
+  height: 260px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #DFC9DC;
+  z-index: 0;
+}
+
+.admin-verification-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.admin-google-map-link {
+  display: inline-flex;
+  margin-top: 12px;
+  color: #692065;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-google-map-link:hover {
+  color: #C28D2E;
+  text-decoration: underline;
+}
+
+.admin-location-missing {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 8px;
+  background: #fff3df;
+  color: #8b5a14;
+}
+
+.admin-location-missing > span {
+  font-size: 18px;
+}
+
+.admin-location-missing strong {
+  font-size: 13px;
+}
+
+.admin-location-missing p {
+  margin: 5px 0 0;
+  font-size: 12px;
 }

@@ -1,6 +1,15 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css';
+import {
+    MapContainer,
+    TileLayer,
+    CircleMarker,
+    Polyline,
+    useMap,
+    AttributionControl
+} from 'react-leaflet';
 import {
     FaHeart,
     FaRegHeart,
@@ -23,6 +32,71 @@ import WeddingDateCalendar from '../../components/WeddingDateCalendar';
 
 const API_URL = 'https://weddingplanner-backend.onrender.com';
 
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const earthRadius = 6371000;
+
+    const toRadians = (value) => (value * Math.PI) / 180;
+
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRadians(lat1)) *
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+
+    return earthRadius * 2 * Math.atan2(
+        Math.sqrt(a),
+        Math.sqrt(1 - a)
+    );
+};
+
+const formatDistance = (meters) => {
+    if (meters < 1000) {
+        return `${Math.round(meters)} m`;
+    }
+
+    return `${(meters / 1000).toFixed(1)} km`;
+};
+
+const formatDuration = (seconds) => {
+    const minutes = Math.ceil(seconds / 60);
+
+    if (minutes < 60) {
+        return `${minutes} min`;
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    return remainingMinutes
+        ? `${hours} hr ${remainingMinutes} min`
+        : `${hours} hr`;
+};
+
+const MapUpdater = ({ position, destination, routeCoordinates }) => {
+    const map = useMap();
+
+    useEffect(() => {
+        if (position && destination) {
+            const points = [
+                position,
+                destination,
+                ...routeCoordinates
+            ];
+
+            map.fitBounds(points, {
+                padding: [35, 35],
+                maxZoom: 15
+            });
+        }
+    }, [map, position, destination, routeCoordinates]);
+
+    return null;
+};
+
 export const PalaceDetails = () => {
     const { palaceId } = useParams();
     const navigate = useNavigate();
@@ -36,12 +110,30 @@ export const PalaceDetails = () => {
     const [activeTab, setActiveTab] = useState('Overview');
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [journeyStatus, setJourneyStatus] = useState('idle');
+    const [currentPosition, setCurrentPosition] = useState(null);
+    const [gpsError, setGpsError] = useState('');
+    const [routeCoordinates, setRouteCoordinates] = useState([]);
+    const [routeInfo, setRouteInfo] = useState(null);
+    const [routeLoading, setRouteLoading] = useState(false);
+    const [routeError, setRouteError] = useState('');
+    const [arrivalMessage, setArrivalMessage] = useState('');
+    const arrivalCountRef = useRef(0);
+    const routeRequestRef = useRef({
+        time: 0,
+        latitude: null,
+        longitude: null
+    });
+    const [arrivalNotificationStatus, setArrivalNotificationStatus] = useState('');
+    const journeyIdRef = useRef(null);
+    const arrivalRequestSentRef = useRef(false);
+    const routeInProgressRef = useRef(false);
+    const watchIdRef = useRef(null);
     const [form, setForm] = useState({
         weddingDate: '',
         guestCount: '',
         specialRequests: ''
     });
-
     useEffect(() => {
         const fetchPalace = async () => {
             try {
@@ -216,6 +308,312 @@ export const PalaceDetails = () => {
             prev === images.length - 1 ? 0 : prev + 1
         );
     };
+    const hasValidCoordinates = () => {
+        const latitude = palace?.coordinates?.latitude;
+        const longitude = palace?.coordinates?.longitude;
+
+        return (
+            latitude !== null &&
+            latitude !== undefined &&
+            longitude !== null &&
+            longitude !== undefined &&
+            Number.isFinite(Number(latitude)) &&
+            Number.isFinite(Number(longitude)) &&
+            Number(latitude) >= -90 &&
+            Number(latitude) <= 90 &&
+            Number(longitude) >= -180 &&
+            Number(longitude) <= 180
+        );
+    };
+
+    const sendArrivalNotification = async (journeyId) => {
+        try {
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(`${API_URL}/journey-arrival`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    palaceId: palace._id,
+                    journeyId
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || 'Unable to send arrival notification.'
+                );
+            }
+
+            if (data.notificationSent) {
+                setArrivalNotificationStatus(
+                    'Arrival push notification sent successfully!'
+                );
+            } else {
+                setArrivalNotificationStatus(
+                    data.message || 'Arrival recorded, but push notification was not delivered.'
+                );
+            }
+        } catch (error) {
+            console.error('Arrival notification error:', error);
+
+            setArrivalNotificationStatus(
+                error.message || 'Unable to send arrival notification.'
+            );
+        }
+    };
+
+    const startJourney = () => {
+        setGpsError('');
+        setArrivalMessage('');
+        setRouteCoordinates([]);
+        setRouteInfo(null);
+        setRouteError('');
+
+        arrivalCountRef.current = 0;
+        arrivalRequestSentRef.current = false;
+        journeyIdRef.current = null;
+        setArrivalNotificationStatus('');
+        routeRequestRef.current = {
+            time: 0,
+            latitude: null,
+            longitude: null
+        };
+        let currentUser;
+
+        try {
+            currentUser = JSON.parse(
+                localStorage.getItem('currentUser') || 'null'
+            );
+        } catch {
+            currentUser = null;
+        }
+
+        const token = localStorage.getItem('token');
+
+        if (!currentUser || !token) {
+            navigate('/login');
+            return;
+        }
+
+        if (currentUser.role && currentUser.role !== 'user') {
+            setGpsError('Only customer accounts can start a journey.');
+            return;
+        }
+
+        if (!hasValidCoordinates()) {
+            setGpsError('The destination location is not available for this palace yet.');
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            setGpsError('Your browser does not support GPS location tracking.');
+            return;
+        }
+
+        if (watchIdRef.current !== null) {
+            return;
+        }
+
+        // Generate a unique ID for this journey.
+        journeyIdRef.current =
+            window.crypto?.randomUUID?.() ||
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+        setJourneyStatus('starting');
+
+        setJourneyStatus('starting');
+
+        watchIdRef.current = navigator.geolocation.watchPosition(
+            (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+
+                setCurrentPosition({
+                    latitude,
+                    longitude,
+                    accuracy
+                });
+
+                setJourneyStatus('tracking');
+                setGpsError('');
+
+                const destinationLatitude = Number(palace.coordinates.latitude);
+                const destinationLongitude = Number(palace.coordinates.longitude);
+
+                const distance = calculateDistance(
+                    latitude,
+                    longitude,
+                    destinationLatitude,
+                    destinationLongitude
+                );
+                // Require two consecutive GPS readings within 1 metre.
+                if (accuracy <= 8 && distance <= 1) {
+                    arrivalCountRef.current += 1;
+                } else {
+                    arrivalCountRef.current = 0;
+                }
+
+                if (arrivalCountRef.current >= 2 && !arrivalRequestSentRef.current) {
+                    // Prevent duplicate arrival requests.
+                    arrivalRequestSentRef.current = true;
+
+                    setJourneyStatus('arrived');
+
+                    setArrivalMessage(
+                        `You have arrived at ${palace.name}!`
+                    );
+
+                    setArrivalNotificationStatus('Sending arrival notification...');
+
+                    // Stop GPS tracking after arrival.
+                    if (watchIdRef.current !== null) {
+                        navigator.geolocation.clearWatch(watchIdRef.current);
+                        watchIdRef.current = null;
+                    }
+
+                    // Notify the backend.
+                    sendArrivalNotification(journeyIdRef.current);
+                }
+
+            },
+            (error) => {
+                const messages = {
+                    1: 'Location permission denied. Please allow location access in your browser.',
+                    2: 'Your current location is unavailable. Please try again.',
+                    3: 'Getting your location timed out. Please try again.'
+                };
+
+                setGpsError(messages[error.code] || 'Unable to access your location.');
+                setJourneyStatus('error');
+
+                if (watchIdRef.current !== null) {
+                    navigator.geolocation.clearWatch(watchIdRef.current);
+                    watchIdRef.current = null;
+                }
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 15000
+            }
+        );
+    };
+
+    const stopJourney = () => {
+        if (watchIdRef.current !== null) {
+            navigator.geolocation.clearWatch(watchIdRef.current);
+            watchIdRef.current = null;
+        }
+
+        arrivalCountRef.current = 0;
+        arrivalRequestSentRef.current = false;
+        journeyIdRef.current = null;
+        setArrivalNotificationStatus('');
+        routeRequestRef.current = {
+            time: 0,
+            latitude: null,
+            longitude: null
+        };
+
+        setJourneyStatus('idle');
+        setCurrentPosition(null);
+        setRouteCoordinates([]);
+        setRouteInfo(null);
+        setRouteError('');
+        setArrivalMessage('');
+        setGpsError('');
+    };
+
+    useEffect(() => {
+        return () => {
+            if (watchIdRef.current !== null) {
+                navigator.geolocation.clearWatch(watchIdRef.current);
+            }
+        };
+    }, []);
+    useEffect(() => {
+        if (!currentPosition || !hasValidCoordinates()) return;
+
+        if (routeInProgressRef.current) return;
+
+        const now = Date.now();
+        const previousRequest = routeRequestRef.current;
+
+        // Avoid repeatedly calling the routing service.
+        if (now - previousRequest.time < 30000) return;
+
+        const latitude = Number(currentPosition.latitude);
+        const longitude = Number(currentPosition.longitude);
+
+        const destinationLatitude = Number(palace.coordinates.latitude);
+        const destinationLongitude = Number(palace.coordinates.longitude);
+
+        routeRequestRef.current = {
+            time: now,
+            latitude,
+            longitude
+        };
+
+        const fetchRoute = async () => {
+            routeInProgressRef.current = true;
+            setRouteLoading(true);
+            setRouteError('');
+
+            try {
+                const url =
+                    `https://router.project-osrm.org/route/v1/driving/` +
+                    `${longitude},${latitude};` +
+                    `${destinationLongitude},${destinationLatitude}` +
+                    `?overview=full&geometries=geojson`;
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error('Unable to calculate the driving route.');
+                }
+
+                const data = await response.json();
+
+                if (data.code !== 'Ok' || !data.routes?.length) {
+                    throw new Error('No driving route was found for this destination.');
+                }
+
+                const route = data.routes[0];
+
+                const coordinates = route.geometry.coordinates.map(
+                    ([routeLongitude, routeLatitude]) => [
+                        routeLatitude,
+                        routeLongitude
+                    ]
+                );
+
+                setRouteCoordinates(coordinates);
+
+                setRouteInfo({
+                    distance: route.distance,
+                    duration: route.duration
+                });
+            } catch (err) {
+                setRouteError(err.message || 'Unable to load the route.');
+            } finally {
+                routeInProgressRef.current = false;
+                setRouteLoading(false);
+            }
+        };
+
+        fetchRoute();
+    }, [
+        currentPosition?.latitude,
+        currentPosition?.longitude,
+        palace
+    ]);
     if (loading) {
         return (
             <div className="pd-status">
@@ -236,11 +634,8 @@ export const PalaceDetails = () => {
             </div>
         );
     }
-
     const tabs = ['Overview', 'Spaces & capacity', 'Packages', 'Reviews'];
-
     const displayPrice = Number(palace.price || 0).toLocaleString('en-IN');
-
     return (
         <main className="pd-page">
             {/* Navigation */}
@@ -550,7 +945,197 @@ export const PalaceDetails = () => {
                         <section className="pd-booking-card">
                             <h2>Plan your visit</h2>
                             <p>Tell us a little about your celebration.</p>
+                            <div className="pd-journey-box">
+                                <h3>Find your way to this palace</h3>
 
+                                <p>
+                                    Start your journey and track your location while travelling
+                                    to this wedding destination.
+                                </p>
+
+                                {!hasValidCoordinates() && (
+                                    <p className="pd-journey-error">
+                                        Destination coordinates are not available yet.
+                                    </p>
+                                )}
+
+                                {gpsError && (
+                                    <p className="pd-journey-error" role="alert">
+                                        {gpsError}
+                                    </p>
+                                )}
+
+                                {journeyStatus === 'tracking' && currentPosition && (
+                                    <p className="pd-journey-success" role="status">
+                                        <span className="pd-live-dot" />
+                                        GPS connected · Accuracy approximately{' '}
+                                        {Math.round(currentPosition.accuracy)} metres
+                                    </p>
+                                )}
+
+                                {journeyStatus === 'starting' && (
+                                    <p>Waiting for your GPS location...</p>
+                                )}
+
+                                {journeyStatus === 'tracking' ? (
+                                    <button
+                                        type="button"
+                                        className="pd-journey-button"
+                                        onClick={stopJourney}
+                                    >
+                                        Stop Journey
+                                    </button>
+                                ) : journeyStatus === 'arrived' ? (
+                                    <button
+                                        type="button"
+                                        className="pd-journey-button"
+                                        disabled
+                                    >
+                                        You Have Arrived
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="pd-journey-button"
+                                        onClick={startJourney}
+                                        disabled={
+                                            !hasValidCoordinates() ||
+                                            journeyStatus === 'starting'
+                                        }
+                                    >
+                                        {journeyStatus === 'starting'
+                                            ? 'Getting location...'
+                                            : 'Start Your Journey'}
+                                    </button>
+                                )}
+                                {arrivalMessage && (
+                                    <div className="pd-journey-success" role="status">
+                                        <strong>🎉 {arrivalMessage}</strong>
+                                    </div>
+                                )}
+                                {arrivalNotificationStatus && (
+                                    <p className="pd-journey-success" role="status">
+                                        {arrivalNotificationStatus}
+                                    </p>
+                                )}
+
+                                {routeError && (
+                                    <p className="pd-journey-error" role="alert">
+                                        {routeError}
+                                    </p>
+                                )}
+
+                                {routeLoading && (
+                                    <p className="pd-route-loading">
+                                        Calculating your driving route...
+                                    </p>
+                                )}
+
+                                {currentPosition && (
+                                    <div className="pd-navigation">
+                                        {routeInfo && (
+                                            <div className="pd-route-summary">
+                                                <div>
+                                                    <span>Distance</span>
+                                                    <strong>{formatDistance(routeInfo.distance)}</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Estimated travel time</span>
+                                                    <strong>{formatDuration(routeInfo.duration)}</strong>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="pd-journey-map">
+                                            <MapContainer
+                                                attributionControl={false}
+                                                center={[
+                                                    currentPosition.latitude,
+                                                    currentPosition.longitude
+                                                ]}
+                                                zoom={13}
+                                                scrollWheelZoom={true}
+                                                style={{ height: '100%', width: '100%' }}
+                                            >
+                                                <AttributionControl prefix="The Chopra's Map Company" position="bottomright" />
+                                                <TileLayer
+                                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                />
+
+                                                <CircleMarker
+                                                    center={[
+                                                        currentPosition.latitude,
+                                                        currentPosition.longitude
+                                                    ]}
+                                                    radius={9}
+                                                    pathOptions={{
+                                                        color: '#ffffff',
+                                                        fillColor: '#2563eb',
+                                                        fillOpacity: 1,
+                                                        weight: 3
+                                                    }}
+                                                />
+
+                                                <CircleMarker
+                                                    center={[
+                                                        Number(palace.coordinates.latitude),
+                                                        Number(palace.coordinates.longitude)
+                                                    ]}
+                                                    radius={10}
+                                                    pathOptions={{
+                                                        color: '#ffffff',
+                                                        fillColor: '#692065',
+                                                        fillOpacity: 1,
+                                                        weight: 3
+                                                    }}
+                                                />
+
+                                                {routeCoordinates.length > 0 && (
+                                                    <Polyline
+                                                        positions={routeCoordinates}
+                                                        pathOptions={{
+                                                            color: '#2563eb',
+                                                            weight: 6,
+                                                            opacity: 0.85
+                                                        }}
+                                                    />
+                                                )}
+
+                                                <MapUpdater
+                                                    position={[
+                                                        currentPosition.latitude,
+                                                        currentPosition.longitude
+                                                    ]}
+                                                    destination={[
+                                                        Number(palace.coordinates.latitude),
+                                                        Number(palace.coordinates.longitude)
+                                                    ]}
+                                                    routeCoordinates={routeCoordinates}
+                                                />
+                                            </MapContainer>
+                                        </div>
+
+                                        <div className="pd-map-legend">
+                                            <span>
+                                                <i className="pd-current-dot" />
+                                                Your location
+                                            </span>
+
+                                            <span>
+                                                <i className="pd-destination-dot" />
+                                                Palace destination
+                                            </span>
+                                        </div>
+
+                                        <p className="pd-navigation-note">
+                                            Blue line shows your driving route. Keep location access enabled
+                                            while navigating.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                             {error && (
                                 <div className="pd-message pd-error" role="alert">
                                     {error}

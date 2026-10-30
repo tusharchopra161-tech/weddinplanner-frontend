@@ -4,6 +4,7 @@ import {
   MapContainer,
   TileLayer,
   CircleMarker,
+  AttributionControl
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 export const ReviewPublish = ({
@@ -187,8 +188,10 @@ export const ReviewPublish = ({
                   touchZoom={false}
                   keyboard={false}
                   zoomControl={false}
+                  attributionControl={false}
                   className="venue-review-map-container"
                 >
+                  <AttributionControl prefix="The Chopra's Map Company" position="bottomright" />
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

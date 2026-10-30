@@ -687,10 +687,10 @@ export const PalaceOwners = () => {
       <aside className={`po-sidebar ${mobileMenu ? "po-sidebar-open" : ""}`}>
         <div className="po-brand">
           <div className="po-brand-icon">
-            <RiBankLine />
+            <img src="../android-chrome-512x512 (2).png"></img>
           </div>
           <div>
-            <strong>Wedora</strong>
+            <strong>W/P</strong>
             <span>PALACE PARTNER</span>
           </div>
         </div>
