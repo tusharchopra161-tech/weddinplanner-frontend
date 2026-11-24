@@ -1,30 +1,77 @@
-// import React from 'react'
-// import "./heroSection.css"
-// import { FaHeart } from "react-icons/fa";
-// export const HeroSection = () => {
-//     return (
-//         <div className="heromain">
-//             <div className="heroLeft"></div>
-//             <div className="heroRight">
-//                 <img src="https://i.pinimg.com/736x/3f/4c/e4/3f4ce4265b717aacce9b6b8378018292.jpg"></img>
-//                 <div className="loveBYCouple text-sm">
-//                     <div className="circle"><FaHeart className="dil"/></div>
-//                     <div className='text-gray-700 text-xsm'>
-//                         <p className='text-[#692065] font-bold'>Loved by couples</p>
-//                         12,000+ celebrations
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import "./heroSection.css"
 import { FaHeart, FaArrowRight, FaCheckCircle } from "react-icons/fa"
+import gsap from 'gsap'
 
 export const HeroSection = () => {
+    const heroRef = useRef(null);
+
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            const tl = gsap.timeline({
+                defaults: {
+                    ease: "power3.out"
+                }
+            });
+
+            tl.fromTo(
+                ".hero-title",
+                {
+                    y: -40,
+                    opacity: 0
+                },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 1
+                }
+            ).fromTo(
+                    ".hero-description",
+                    {
+                        y: 25,
+                        opacity: 0
+                    },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.8
+                    },
+                    "-=0.5"
+                )
+                .fromTo(
+                    ".heroRight img",
+                    {
+                        opacity: 0,
+                        scale: 0.95
+                    },
+                    {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 1
+                    },
+                    "-=0.4"
+                )
+                .fromTo(
+                    ".hero-buttons",
+                    {
+                        y: 20,
+                        opacity: 0
+                    },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.7
+                    },
+                    "-=0.4"
+                );
+
+        }, heroRef);
+
+        return () => ctx.revert();
+
+    }, []);
     return (
-        <section className="heromain">
+        <section className="heromain" ref={heroRef}>
 
             {/* Left Content */}
             <div className="heroLeft">

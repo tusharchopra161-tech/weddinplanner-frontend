@@ -1,0 +1,421 @@
+/* 
+.google-profile-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: #f0f4f9;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.google-profile-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 28px;
+  box-sizing: border-box;
+}
+
+.google-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  color: #5f6368;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.google-g {
+  font-size: 27px;
+  font-weight: 700;
+  background: conic-gradient(
+    from -45deg,
+    #4285f4 0deg 90deg,
+    #34a853 90deg 180deg,
+    #fbbc05 180deg 270deg,
+    #ea4335 270deg 360deg
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.google-profile-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.google-profile-heading h1 {
+  margin: 0 0 12px;
+  color: #202124;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.google-profile-heading p {
+  margin: 0;
+  color: #5f6368;
+  font-size: 15px;
+}
+
+.google-user-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 28px;
+  border: 1px solid #dadce0;
+  border-radius: 30px;
+}
+
+.google-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #e8eaed;
+}
+
+.google-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.google-user-name {
+  color: #202124;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.google-user-email {
+  color: #5f6368;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.google-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.google-profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.google-profile-field label {
+  color: #202124;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.google-profile-field input,
+.google-profile-field select {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #202124;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.google-profile-field input:focus,
+.google-profile-field select:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 1px #1a73e8;
+}
+
+.google-profile-field input::placeholder {
+  color: #80868b;
+}
+
+.google-profile-message {
+  margin: 0;
+  color: #d93025;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.google-profile-submit {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 24px;
+  background: #1a73e8;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.google-profile-submit:hover {
+  background: #1765cc;
+}
+
+.google-profile-submit:disabled {
+  background: #9bbce9;
+  cursor: not-allowed;
+}
+
+.google-profile-footer {
+  margin: 24px 0 0;
+  color: #5f6368;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .google-profile-page {
+    padding: 16px;
+    background: #ffffff;
+  }
+
+  .google-profile-card {
+    padding: 24px 20px;
+    border: none;
+    border-radius: 0;
+  }
+
+  .google-profile-heading h1 {
+    font-size: 24px;
+  }
+} */
+
+
+.google-profile-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: #070d16;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #e8eaed;
+}
+
+.google-profile-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  background: #101925;
+  border: 1px solid #263548;
+  border-radius: 28px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.google-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 28px;
+  color: #bdc1c6;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.google-g {
+  font-size: 27px;
+  font-weight: 700;
+  background: conic-gradient(
+    from -45deg,
+    #4285f4 0deg 90deg,
+    #34a853 90deg 180deg,
+    #fbbc05 180deg 270deg,
+    #ea4335 270deg 360deg
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.google-profile-heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.google-profile-heading h1 {
+  margin: 0 0 12px;
+  color: #f1f3f4;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.google-profile-heading p {
+  margin: 0;
+  color: #aab4c2;
+  font-size: 15px;
+}
+
+.google-user-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 28px;
+  border: 1px solid #34445a;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.google-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #263548;
+}
+
+.google-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.google-user-name {
+  color: #f1f3f4;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.google-user-email {
+  color: #aab4c2;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.google-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.google-profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.google-profile-field label {
+  color: #dce2eb;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.google-profile-field input,
+.google-profile-field select {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid #34445a;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+  background: #0b1320;
+  color: #f1f3f4;
+  font-family: inherit;
+  font-size: 15px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.google-profile-field input:focus,
+.google-profile-field select:focus {
+  border-color: #8ab4f8;
+  box-shadow: 0 0 0 1px #8ab4f8;
+}
+
+.google-profile-field input::placeholder {
+  color: #7f8b9b;
+}
+
+.google-profile-field select {
+  cursor: pointer;
+}
+
+.google-profile-field select option {
+  background: #101925;
+  color: #f1f3f4;
+}
+
+.google-profile-message {
+  margin: 0;
+  color: #ff8a80;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.google-profile-submit {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 24px;
+  background: #8ab4f8;
+  color: #07111f;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.google-profile-submit:hover {
+  background: #aecbfa;
+  box-shadow: 0 4px 18px rgba(138, 180, 248, 0.15);
+}
+
+.google-profile-submit:disabled {
+  background: #526783;
+  color: #c0c9d5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.google-profile-footer {
+  margin: 24px 0 0;
+  color: #8b98aa;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .google-profile-page {
+    padding: 16px;
+    background: #070d16;
+  }
+
+  .google-profile-card {
+    padding: 24px 20px;
+    border-radius: 20px;
+  }
+
+  .google-profile-heading h1 {
+    font-size: 24px;
+  }
+}

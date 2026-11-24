@@ -17,6 +17,7 @@ export const Nav = () => {
   const user = islogin
     ? JSON.parse(localStorage.getItem("currentUser"))
     : ""
+    
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate = useNavigate()
   const API_URL = "https://weddingplanner-backend.onrender.com";
@@ -320,13 +321,13 @@ export const Nav = () => {
       <div className={`nav-bottom ${isMenuOpen ? "menu-open" : ""} ${!user ? "nav-bottom-guest" : "nav-bottom-logged-in"} `}>
         <div className="nav-logo">
           <div className="nav-logo-img">
-            <button onClick={()=>navigate("/")}>
+            <button onClick={() => navigate("/")}>
               <img
-              src="../android-chrome-512x512 (2).png"
-              alt="WeddingPlanner logo"
-            />
+                src="../android-chrome-512x512 (2).png"
+                alt="WeddingPlanner logo"
+              />
             </button>
-            
+
           </div>
 
           <div className="nav-logo-text">
@@ -339,13 +340,16 @@ export const Nav = () => {
           {/* Mobile profile header */}
           {islogin && (
             <div className="mobile-profile-header">
-              <div
-                className="mobile-profile-circle"
-                style={{ backgroundColor: bgcolor }}
-              >
-                {firstLetter}
-              </div>
+              {user.profilePic ? <img src={user.profilePic} alt={user.name || "profile"} className="mobile-profile-image" />
+                : <div
+                  className="mobile-profile-circle"
+                  style={{ backgroundColor: bgcolor }}
+                >
+                  {firstLetter}
+                </div>
 
+
+              }
               <div className="mobile-profile-info">
                 <div className="mobile-profile-name">
                   {user?.name}
@@ -467,7 +471,7 @@ export const Nav = () => {
               >
                 List Your Venue
               </button>
-              {isMenuOpen?<EnablePushNotification/>:<></>}
+              {isMenuOpen ? <EnablePushNotification /> : <></>}
               <button
                 className="desktop-getbtn"
                 onClick={() => {
@@ -478,19 +482,39 @@ export const Nav = () => {
                 Get Started
               </button>
 
-              {isMenuOpen ? <></> : <div
-                onClick={() => {
-                  clicklog()
-                  closeMenu()
-                }}
-                style={{ backgroundColor: bgcolor }}
-                className="profile-cicle"
-                role="button"
-                tabIndex={0}
-                aria-label="Open profile"
-              >
-                {firstLetter}
-              </div>}
+              {isMenuOpen ? (
+                <></>
+              ) : user.profilePic ? (
+                <button
+                  type="button"
+                  className="profile-image-button"
+                  onClick={() => {
+                    clicklog();
+                    closeMenu();
+                  }}
+                  aria-label="Open profile"
+                >
+                  <img
+                    className="profile-image"
+                    src={user.profilePic}
+                    alt={user.name || "Profile"}
+                  />
+                </button>
+              ) : (
+                <div
+                  onClick={() => {
+                    clicklog();
+                    closeMenu();
+                  }}
+                  style={{ backgroundColor: bgcolor }}
+                  className="profile-cicle"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Open profile"
+                >
+                  {firstLetter}
+                </div>
+              )}
 
               {/* Visible only in the mobile sidebar */}
               <button

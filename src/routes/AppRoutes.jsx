@@ -10,10 +10,10 @@ import AdminDashboard from '../components/AdminDashboard'
 import ProtectedRoute from './ProtectedRoute'
 import { PalaceDetails } from '../screens/PalaceDetails'
 import { MyBookings } from '../screens/MyBookings'
-
+import { CompleteGoogleProfile } from '../components/CompleteGoogleProfile'
 const HomeRedirect = () => {
   const token = localStorage.getItem("token");
-
+  
   let currentUser = {};
 
   try {
@@ -47,6 +47,7 @@ export const AppRoutes = () => {
       <Route path="/owner-dashboard" element={<ProtectedRoute allowedRoles={["owner"]}><PalaceOwners /></ProtectedRoute>}></Route>
       <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/my-bookings" element={<MyBookings />}></Route>
+      <Route path="/complete-google-profile" element={<CompleteGoogleProfile/>}></Route>
       <Route path="*" element={<Navigate to="/" replace />}/>
     </Routes>
 

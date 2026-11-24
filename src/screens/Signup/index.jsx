@@ -8,7 +8,7 @@ export const Signup = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
+    fullname: "",
     mobileno: "",
     email: "",
     password: "",
@@ -68,8 +68,8 @@ export const Signup = () => {
             className="signup-input"
             type="text"
             id="signup-name"
-            name="name"
-            value={form.name}
+            name="fullname"
+            value={form.fullname}
             onChange={handleChange}
             placeholder="Enter your full name"
             autoComplete="name"

@@ -652,7 +652,12 @@ export const PalaceOwners = () => {
     };
   }, [selectedPhotos]);
   const displayName = palaceForm.name || owner.name || "Palace Owner";
+
   const initials = getInitials(displayName);
+
+  // Google profile picture stored in currentUser.
+  const profilePic = owner.profilePic || owner.profilePicture || owner.picture || "";
+
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",
@@ -746,7 +751,19 @@ export const PalaceOwners = () => {
             </button>
           </div>
           <div className="po-profile">
-            <span className="po-profile-avatar">{initials}</span>
+            <span className="po-profile-avatar">
+              {profilePic && (
+                <img
+                  src={profilePic}
+                  alt={`${displayName}'s profile`}
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              )}
+
+              <span>{initials}</span>
+            </span>
             <div className="po-profile-info">
               <strong>{displayName}</strong>
               <small>Palace Owner</small>
@@ -887,7 +904,19 @@ export const PalaceOwners = () => {
                 <strong>{displayName}</strong>
                 <span>Palace Partner</span>
               </div>
-              <span className="po-avatar">{initials}</span>
+              <span className="po-avatar">
+                {profilePic && (
+                  <img
+                    src={profilePic}
+                    alt={`${displayName}'s profile`}
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+
+                <span>{initials}</span>
+              </span>
             </div>
           </div>
         </header>
